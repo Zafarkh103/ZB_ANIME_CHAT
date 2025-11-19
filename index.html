@@ -1,94 +1,182 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <title>❤️ SCAM SA BACHA | Mega Scam Alert Page</title>
-  <style>
-    body {
-      background: #111;
-      color: #fff;
-      font-family: Arial, sans-serif;
-      text-align: center;
-      padding: 30px;
-    }
-    .card {
-      background: #1e1e1e;
-      border: 2px solid red;
-      border-radius: 12px;
-      padding: 20px;
-      margin: 30px auto;
-      max-width: 650px;
-      box-shadow: 0 0 15px #f00;
-    }
-    .card h2 {
-      color: #ff4444;
-    }
-    .card p {
-      font-size: 16px;
-      margin-top: 8px;
-    }
-    iframe {
-      width: 100%;
-      max-width: 560px;
-      height: 315px;
-      border-radius: 12px;
-      border: none;
-      margin-top: 15px;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ZAFI Chat</title>
+    
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f0f2f5; 
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
+        .chat-container {
+            flex-grow: 1;
+            padding: 10px;
+            overflow-y: auto;
+            background-color: #e5ddd5; 
+            display: flex;
+            flex-direction: column;
+        }
+        .message {
+            margin-bottom: 8px;
+            padding: 8px 12px;
+            border-radius: 7px;
+            max-width: 80%;
+            word-wrap: break-word;
+            line-height: 1.4;
+            position: relative;
+            font-size: 14px;
+        }
+        /* Message sent by 'Mai' (Aap) */
+        .sent {
+            background-color: #dcf8c6;
+            align-self: flex-end;
+            margin-left: auto;
+        }
+        /* Message received from 'Doosra Dost' (Zohaib) */
+        .received {
+            background-color: #ffffff;
+            align-self: flex-start;
+            margin-right: auto;
+        }
+        .sender-name {
+            font-size: 10px;
+            color: #777;
+            margin-bottom: 2px;
+            display: block;
+        }
+        .input-area {
+            display: flex;
+            padding: 8px 10px;
+            background-color: #f0f0f0;
+        }
+        #messageInput {
+            flex-grow: 1;
+            padding: 10px;
+            border-radius: 20px;
+            border: none;
+            margin-right: 8px;
+            font-size: 16px;
+            background-color: white;
+        }
+        #sendButton {
+            width: 44px;
+            height: 44px;
+            border: none;
+            border-radius: 50%;
+            background-color: #075e54; 
+            color: white;
+            cursor: pointer;
+            font-size: 16px;
+            line-height: 44px;
+            text-align: center;
+        }
+    </style>
 </head>
 <body>
-  <h1>🚨 Welcome to SCAM Alert 🚨  Page By ZR ZAFI❤️</h1>
-  <p>Har user India, Pakistan, UK se yahan se scam ka sach seekh sakein. Stay safe and alert! 🛡️</p>
 
-    <div class="card">
-      <h2>📘 Facebook Login Scam</h2>
-      <iframe src="https://www.youtube.com/embed/3Yh4fDVrQzw?si=lOISsANfCoTgb-Rt" allowfullscreen></iframe>
-      <p>⚠️ Fake Facebook login pages steal your account!</p>
-      <p>⚠️ Facebook ke fake login pages aapka account chura lete hain!</p>
+    <div class="chat-container" id="messages">
+        </div>
+
+    <div class="input-area">
+        <input type="text" id="messageInput" placeholder="Type a message...">
+        <button id="sendButton">➤</button>
     </div>
+
+    <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-database.js"></script>
     
-    <div class="card">
-      <h2>📸 Instagram Fake Verification</h2>
-      <iframe src="https://www.youtube.com/embed/g29d45EP_vg?si=jzKAkPHvbkmseL2N" allowfullscreen></iframe>
-      <p>⚠️ Fake 'blue tick verify' forms ask for your login!</p>
-      <p>⚠️ Instagram blue tick ke naam pe account chori hota hai!</p>
-    </div>
-    
-    <div class="card">
-      <h2>💬 WhatsApp Code Scam</h2>
-      <iframe src="https://www.youtube.com/embed/6heJVO4tCHw" allowfullscreen></iframe>
-      <p>⚠️ Never share your WhatsApp verification code!</p>
-      <p>⚠️ WhatsApp ka code kisi ko mat do bhai!</p>
-    </div>
-    
-    <div class="card">
-      <h2>🎮 PUBG Login Scam</h2>
-      <iframe src="https://www.youtube.com/embed/bHnVtoDRXcs" allowfullscreen></iframe>
-      <p>⚠️ Fake UC websites ask for your login info!</p>
-      <p>⚠️ Free UC ka jhoot — account chori karte hain!</p>
-    </div>
-    
-    <div class="card">
-      <h2>🔥 Free Fire Diamond Scam</h2>
-      <iframe src="https://www.youtube.com/embed/nx6QyphfSsE?si=6NHAyB3kXv2bl2No" allowfullscreen></iframe>
-      <p>⚠️ Free diamonds scam steals login credentials!</p>
-      <p>⚠️ Fake diamonds offer se FF ID chori ho jaati hai!</p>
-    </div>
-    
-    <div class="card">
-      <h2>🎵 TikTok Monetization Scam</h2>
-      <iframe src="https://www.youtube.com/embed/o4JzRuuQkGA?si=5lJv4Ko0xEgNBSuz" allowfullscreen></iframe>
-      <p>⚠️ Fake brand offers hijack TikTok account!</p>
-      <p>⚠️ TikTok collab ka jhoot — login mat do!</p>
-    </div>
-     
-    <div class="card">
-      <h2>💸 Fake Money Transfer</h2>
-      <iframe src="https://www.youtube.com/embed/2zOQpuN3RUA?si=NykPqsmOyfc3DZMz" allowfullscreen></iframe>
-      <p>⚠️ 'You've received money' SMS is a fraud!</p>
-      <p>⚠️ Paise milne ka message fraud hota hai. Dhoka mat khao!</p>
-    </div>
-    
+    <script>
+        // Aapki Firebase Configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyB8zMhCjGxmHBpruABYA4pBj3jU0uMHCs0",
+            authDomain: "zafi-chat-app.firebaseapp.com",
+            projectId: "zafi-chat-app",
+            storageBucket: "zafi-chat-app.firebasestorage.app",
+            messagingSenderId: "989950346714",
+            appId: "1:989950346714:web:7bad7f8fae2a72ce0bace3",
+            measurementId: "G-XW5MS2D2K7"
+        };
+
+        // Initialization 
+        const app = firebase.initializeApp(firebaseConfig);
+        const database = app.database(); 
+        const auth = app.auth();         
+
+        // Authentication (User ID/Profile ID banana)
+        let currentUserId = null; 
+
+        auth.signInAnonymously()
+            .then(() => {
+                console.log("User signed in anonymously.");
+            })
+            .catch((error) => {
+                console.error("Sign-in error:", error);
+            });
+            
+        auth.onAuthStateChanged((user) => {
+            if (user) {
+                currentUserId = user.uid;
+                console.log("Current User ID (Profile ID):", currentUserId);
+            }
+        });
+
+        // Chat Functions 
+        const messagesRef = database.ref('messages'); 
+
+        document.getElementById('sendButton').addEventListener('click', sendMessage);
+
+        document.getElementById('messageInput').addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') {
+                sendMessage();
+            }
+        });
+
+        function sendMessage() {
+            const input = document.getElementById('messageInput');
+            const messageText = input.value;
+
+            if (messageText.trim() === "" || !currentUserId) {
+                return;
+            }
+
+            // Database mein data save karna 
+            messagesRef.push({
+                text: messageText,
+                senderId: currentUserId
+            });
+
+            input.value = ''; 
+        }
+
+        // Messages ko real-time mein display karna
+        messagesRef.on('value', (snapshot) => {
+            const messagesDiv = document.getElementById('messages');
+            messagesDiv.innerHTML = ''; 
+
+            snapshot.forEach((childSnapshot) => {
+                const message = childSnapshot.val();
+                
+                const isSentByMe = (message.senderId === currentUserId);
+                const senderName = isSentByMe ? "Mai (Aap)" : "Zohaib Zafar"; 
+                
+                const messageElement = document.createElement('div');
+                messageElement.classList.add('message', isSentByMe ? 'sent' : 'received');
+                
+                messageElement.innerHTML = `<span class="sender-name">${senderName}</span>${message.text}`;
+                messagesDiv.appendChild(messageElement);
+            });
+
+            messagesDiv.scrollTop = messagesDiv.scrollHeight; 
+        });
+
+    </script>
 </body>
 </html>
