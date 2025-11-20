@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"> 
+  <title>ZAFI Chat</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #f0f2f5;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh; 
+    }
+    .chat-container {
+      flex-grow: 1;
+      padding: 10px;
+      overflow-y: auto;
+      background-color: #e5ddd5;
+      display: flex;
+      flex-direction: column;
+      /* Padding increase for fixed input area and header */
+      padding-top: 50px; 
+      padding-bottom: 70px;
+    }
+    /* NEW: Chat Header for Status */
+    .chat-header {
+        position: fixed;
+        top: 0;
+        width: 100%;
+        background-color: #075e54;
+        color: white;
+        padding: 10px 15px;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        z-index: 10;
+        display: flex;
+        align-items: center;
+    }
+    .status-dot {
+        height: 10px;
+        width: 10px;
+        background-color: gray;
+        border-radius: 50%;
+        display: inline-block;
+        margin-left: 8px;
+    }
+    .online {
+        background-color: #25d366; /* WhatsApp Green */
+    }
+    .message {
+      margin-bottom: 8px;
+      padding: 10px 14px;
+      border-radius: 8px;
+      max-width: 80%;
+      word-wrap: break-word;
+      line-height: 1.5;
+      position: relative;
+      font-size: 18px;
+    }
+    .sent {
+      background-color: #dcf8c6;
+      align-self: flex-end;
+      margin-left: auto;
+    }
+    .received {
+      background-color: #ffffff;
+      align-self: flex-start;
+      margin-right: auto;
+    }
+    .sender-name {
+      font-size: 14px;
+      color: #777;
+      margin-bottom: 2px;
+      display: block;
+    }
+    .timestamp-tick {
+        font-size: 12px;
+        color: #929292; /* Gray for single tick */
+        float: right;
+        margin-left: 8px;
+        line-height: 1.5;
+    }
+    /* NEW: Context Menu for Delete */
+    .context-menu {
+        position: fixed; /* Use fixed for better mobile handling */
+        background: white;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        box-shadow: 2px 2px 5px rgba(0,0,0,0.3);
+        z-index: 20;
+        display: none;
+    }
+    .context-menu-item {
+        padding: 10px 20px;
+        cursor: pointer;
+        font-size: 16px;
+        color: #c0392b; /* Red for delete */
+    }
+    .context-menu-item:hover {
+        background-color: #f0f0f0;
+    }
+    .input-area {
+      display: flex;
+      padding: 10px;
+      background-color: #f0f0f0;
+      position: fixed;
+      bottom: 0;
+      width: 100%;
+      box-sizing: border-box;
+      align-items: center;
+    }
+    #messageInput {
+      flex-grow: 1;
+      padding: 12px;
+      border-radius: 20px;
+      border: none;
+      margin-right: 8px;
+      font-size: 18px;
+      background-color: white;
+    }
+    #sendButton {
+      width: 45px;
+      height: 45px;
+      border: none;
+      border-radius: 50%;
+      background-color: #075e54;
+      color: white;
+      cursor: pointer;
+      font-size: 20px;
+      line-height: 45px;
+      text-align: center;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-shrink: 0;
+    }
+  </style>
+</head>
+<body>
+  <div class="chat-header">
+    ZAFI Chat 
+    <span id="otherUserStatus" class="status-dot"></span>
+    <span id="statusText" style="font-size: 14px; margin-left: 5px;">Offline</span>
+  </div>
+
+  <div class="chat-container" id="messages">
+  </div>
+
+  <div id="contextMenu" class="context-menu">
+    <div class="context-menu-item" id="deleteOption">Delete Message</div>
+  </div>
+
+  <div class="input-area">
+    <input type="text" id="messageInput" placeholder="Type a message...">
+    <button id="sendButton">➤</button>
+  </div>
+  
+  <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-app.js"></script>                                                             
+  <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-database.js"></script>                                                                  
+  <script>
+                                   
+    const firebaseConfig = {
+      apiKey: "AIzaSyB8zMhCjGxmHBpruABYA4pBj3jU0uMHCs0",
+      authDomain: "zafi-chat-app.firebaseapp.com",
+      projectId: "zafi-chat-app",
+      storageBucket: "zafi-chat-app.firebasestorage.app",
+      messagingSenderId: "989950346714",
+      appId: "1:989950346714:web:7bad7f8fae2a72ce0bace3",
+      measurementId: "G-XW5MS2D2K7",
+      databaseURL: "https://zafi-chat-app-default-rtdb.asia-southeast1.firebasedatabase.app" 
+    };
+                     
+    const app = firebase.initializeApp(firebaseConfig);
+    const database = app.database();
+    const auth = app.auth();
+                                                 
+    let currentUserId = null;
+    let otherUserId = null; // Assuming only two users: ZAFAR and ZOHAIB
+    const fixedUserIds = {
+        ZAFAR: "zafar_fixed_id", // Replace with a real fixed ID if needed
+        ZOHAIB: "zohaib_fixed_id" // Replace with a real fixed ID if needed
+    };
+    
+    // Use an existing user ID for simulation if you know one. 
+    // For Anonymous sign-in, the ID changes every time unless you use persistent IDs.
+
+    auth.signInAnonymously()
+      .then((userCredential) => {
+        currentUserId = userCredential.user.uid;
+        // Logic to determine the "other" user based on who is current.
+        // This logic is complex in anonymous chat, but for a 2-person simulation:
+        // You can simplify: whoever logs in first gets one ID, second gets the other.
+        // For now, we will use the actual UID for current and track status there.
+        console.log("Current User ID:", currentUserId);
+        
+        // --- NEW FEATURE 1: Online Status Setup ---
+        setupUserStatus(currentUserId);
+        
+      })
+      .catch((error) => {
+        console.error("Sign-in error:", error);
+      });
+
+    
+    // --- NEW FEATURE 1: Online Status Logic ---
+    function setupUserStatus(uid) {
+        const userStatusRef = database.ref('status/' + uid);
+        const isOnline = { state: 'online', last_seen: firebase.database.ServerValue.TIMESTAMP };
+        const isOffline = { state: 'offline', last_seen: firebase.database.ServerValue.TIMESTAMP };
+
+        // 1. Set status to offline when user disconnects
+        userStatusRef.onDisconnect().set(isOffline).then(() => {
+            // 2. Set status to online immediately
+            userStatusRef.set(isOnline);
+        });
+
+        // 3. Listen for other user's status (This assumes we know the other user's UID)
+        // Since we are using anonymous sign-in, let's assume the status we check is for a FIXED 'ZOHAIB' profile
+        // Replace 'zohaib_fixed_id' with the actual UID of Zohaib if you know it, or manage IDs differently.
+        otherUserId = 'zohaib_fixed_id'; 
+        
+        database.ref('status/' + otherUserId).on('value', (snapshot) => {
+            const status = snapshot.val();
+            const dot = document.getElementById('otherUserStatus');
+            const text = document.getElementById('statusText');
+            
+            if (status && status.state === 'online') {
+                dot.classList.add('online');
+                text.textContent = 'Online';
+            } else {
+                dot.classList.remove('online');
+                if (status && status.last_seen) {
+                    const date = new Date(status.last_seen);
+                    text.textContent = 'Last seen: ' + date.toLocaleTimeString();
+                } else {
+                    text.textContent = 'Offline';
+                }
+            }
+        });
+    }
+
+    const messagesRef = database.ref('messages');
+    const messagesDiv = document.getElementById('messages');
+    const messageInput = document.getElementById('messageInput');
+    const contextMenu = document.getElementById('contextMenu');
+    const deleteOption = document.getElementById('deleteOption');
+
+    document.getElementById('sendButton').addEventListener('click', sendMessage);
+    messageInput.addEventListener('keypress', function (e) {
+      if (e.key === 'Enter') {
+        sendMessage();
+      }
+    });
+
+    // Close context menu when clicking anywhere else
+    document.addEventListener('click', () => {
+        contextMenu.style.display = 'none';
+    });
+
+    function sendMessage() {
+      const messageText = messageInput.value;
+      if (messageText.trim() === "" || !currentUserId) {
+        return;
+      }
+                                      
+      messagesRef.push({
+        text: messageText,
+        senderId: currentUserId,
+        timestamp: Date.now()
+      });
+      messageInput.value = '';
+    }
+    
+    // --- NEW FEATURE 2: Message Delete Logic ---
+    let messageKeyToDelete = null;
+
+    deleteOption.addEventListener('click', () => {
+        if (messageKeyToDelete) {
+            messagesRef.child(messageKeyToDelete).remove()
+                .then(() => {
+                    console.log("Message successfully deleted:", messageKeyToDelete);
+                    messageKeyToDelete = null; 
+                    contextMenu.style.display = 'none';
+                })
+                .catch((error) => {
+                    console.error("Error deleting message:", error);
+                    alert("Message delete nahi ho saka.");
+                });
+        }
+    });
+
+    function showContextMenu(e, key) {
+        e.preventDefault(); // Stop default browser menu
+        e.stopPropagation(); // Stop document click from closing it immediately
+
+        contextMenu.style.display = 'block';
+        
+        // Position the menu near the click/touch point
+        contextMenu.style.left = e.clientX + 'px';
+        contextMenu.style.top = e.clientY + 'px';
+        
+        // Handle screen edges
+        if (e.clientX + contextMenu.offsetWidth > window.innerWidth) {
+            contextMenu.style.left = window.innerWidth - contextMenu.offsetWidth - 10 + 'px';
+        }
+        if (e.clientY + contextMenu.offsetHeight > window.innerHeight) {
+            contextMenu.style.top = window.innerHeight - contextMenu.offsetHeight - 10 + 'px';
+        }
+
+        messageKeyToDelete = key;
+    }
+
+    // --- Message Display Logic ---
+    messagesRef.on('value', (snapshot) => {
+      messagesDiv.innerHTML = '';
+      snapshot.forEach((childSnapshot) => {
+        const message = childSnapshot.val();
+        const messageKey = childSnapshot.key;
+        const isSentByMe = (message.senderId === currentUserId);
+        const senderName = isSentByMe ? "Z (ZAFAR)" : "ZOHAIB";
+        
+        const messageElement = document.createElement('div');
+        messageElement.classList.add('message', isSentByMe ? 'sent' : 'received');
+        
+        // Format time (Optional but good practice)
+        const time = new Date(message.timestamp || Date.now()).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        
+        // Basic Single Tick (For sent messages only)
+        const tickHtml = isSentByMe ? `<span class="timestamp-tick">${time} ✓</span>` : '';
+        
+        messageElement.innerHTML = `
+            <span class="sender-name">${senderName}</span>
+            ${message.text}
+            ${tickHtml}
+        `;
+        
+        // --- ADD DELETE EVENT LISTENERS ---
+        if (isSentByMe) {
+            // Desktop (Right Click)
+            messageElement.addEventListener('contextmenu', (e) => {
+                showContextMenu(e, messageKey);
+            });
+            
+            // Mobile (Long Press - using a simple timer)
+            let pressTimer;
+            messageElement.addEventListener('touchstart', (e) => {
+                e.stopPropagation(); 
+                pressTimer = setTimeout(() => {
+                    showContextMenu(e, messageKey);
+                }, 800); // 800ms for a long press
+            });
+            messageElement.addEventListener('touchend', () => {
+                clearTimeout(pressTimer);
+            });
+            messageElement.addEventListener('touchmove', () => {
+                clearTimeout(pressTimer); // Cancel if finger moves
+            });
+        }
+        
+        messagesDiv.appendChild(messageElement);
+      });
+      messagesDiv.scrollTop = messagesDiv.scrollHeight;
+    });
+  </script>
+</body>
+</html>
