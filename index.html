@@ -18,7 +18,8 @@
       flex-grow: 1;
       padding: 10px;
       overflow-y: auto;
-      background-color: #e5ddd5;
+      /* WhatsApp background pattern-like color */
+      background-color: #e5ddd5; 
       display: flex;
       flex-direction: column;
       padding-top: 50px; 
@@ -28,7 +29,8 @@
         position: fixed;
         top: 0;
         width: 100%;
-        background-color: #075e54;
+        /* Dark WhatsApp Green Header */
+        background-color: #075e54; 
         color: white;
         padding: 10px 15px;
         box-shadow: 0 2px 5px rgba(0,0,0,0.2);
@@ -45,7 +47,7 @@
         margin-left: 8px;
     }
     .online {
-        background-color: #25d366;
+        background-color: #25d366; /* WhatsApp Online Green */
     }
     .message {
       margin-bottom: 8px;
@@ -56,6 +58,7 @@
       line-height: 1.5;
       position: relative;
       font-size: 18px;
+      box-shadow: 0 1px 0.5px rgba(0, 0, 0, 0.13); /* Slight WhatsApp shadow */
     }
     .sent {
       background-color: #dcf8c6;
@@ -72,6 +75,7 @@
       color: #777;
       margin-bottom: 2px;
       display: block;
+      font-weight: bold; /* Naam ko thora bold kiya */
     }
     .timestamp-tick {
         font-size: 12px;
@@ -100,8 +104,9 @@
     }
     .input-area {
       display: flex;
-      padding: 10px;
-      background-color: #f0f0f0;
+      padding: 8px; /* Thora sa kam padding */
+      /* Light grey ya thora sa white look */
+      background-color: #f6f6f6; 
       position: fixed;
       bottom: 0;
       width: 100%;
@@ -122,7 +127,8 @@
       height: 45px;
       border: none;
       border-radius: 50%;
-      background-color: #075e54;
+      /* WhatsApp Send Button Green */
+      background-color: #128c7e; 
       color: white;
       cursor: pointer;
       font-size: 20px;
@@ -134,9 +140,9 @@
       flex-shrink: 0;
     }
 
-    /* 🤩 NEW STYLES FOR THE NAME MODAL 🤩 */
+    /* Name Modal Styles (Same, already good) */
     #nameModal {
-        display: none; /* Default hidden */
+        display: none; 
         position: fixed;
         left: 0;
         top: 0;
@@ -171,7 +177,8 @@
         font-size: 16px;
     }
     #submitName {
-        background-color: #075e54;
+        /* WhatsApp Green for Button */
+        background-color: #128c7e; 
         color: white;
         padding: 10px 20px;
         border: none;
@@ -181,10 +188,8 @@
         transition: background-color 0.3s;
     }
     #submitName:hover {
-        background-color: #128c7e;
+        background-color: #075e54;
     }
-    /* 🤩 END OF MODAL STYLES 🤩 */
-
   </style>
 </head>
 <body>
@@ -197,6 +202,7 @@
       <button id="submitName">Chat Shuru Karein</button>
     </div>
   </div>
+
   <div class="chat-header">
     ZAFI Chat 
     <span id="otherUserStatus" class="status-dot"></span>
@@ -253,6 +259,7 @@
 
     
     // --- MAIN SIGN-IN LOGIC ---
+    // Jaise hi file load ho, sign-in start ho jaye.
     auth.signInAnonymously()
       .then(async (userCredential) => {
         currentUserId = userCredential.user.uid;
@@ -262,15 +269,14 @@
         const nameSnapshot = await userRef.child('displayName').once('value');
         
         if (nameSnapshot.exists()) {
-            // Agar naam pehle se save hai
+            // Agar naam pehle se save hai, toh use karo aur chat shuru karo.
             currentUserName = nameSnapshot.val();
-            // Sab kuch shuru kardo
             setupUserStatus(currentUserId);
             startMessageListener(); 
         } else {
-            // Agar naam save nahi hai, toh stylish modal dikhao
+            // Agar naam save nahi hai, toh stylish modal dikhao aur chat rok do.
             nameModal.style.display = 'flex';
-            nameInput.focus(); // Input box pe focus karo
+            nameInput.focus(); 
         }
         
       })
@@ -296,7 +302,7 @@
                 nameModal.style.display = 'none';
                 console.log("Current User Name set:", currentUserName);
                 
-                // Sab kuch shuru kardo
+                // Naam save hotay hi chat shuru kardo
                 setupUserStatus(currentUserId);
                 startMessageListener();
             })
@@ -360,10 +366,12 @@
     function sendMessage() {
       const messageText = messageInput.value;
       
-      // Check for name/ID
+      // Check for name/ID - agar naam set nahi toh message nahi bhejega
       if (messageText.trim() === "" || !currentUserId || !currentUserName) {
         if (!currentUserName) {
-            alert("Pehle apna naam set kijiye! (Please set your name first!)");
+            // Agar currentUserName null hai toh user ko modal dikha do
+            nameModal.style.display = 'flex';
+            nameInput.focus();
         }
         return;
       }
@@ -430,7 +438,8 @@
                 
                 const time = new Date(message.timestamp || Date.now()).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
                 
-                const tickHtml = isSentByMe ? `<span class="timestamp-tick">${time} ✓</span>` : '';
+                // Single tick with timestamp
+                const tickHtml = isSentByMe ? `<span class="timestamp-tick">${time} ✓</span>` : ''; 
                 
                 messageElement.innerHTML = `
                     <span class="sender-name">${senderName}</span>
