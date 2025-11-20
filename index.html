@@ -21,11 +21,9 @@
       background-color: #e5ddd5;
       display: flex;
       flex-direction: column;
-      /* Padding increase for fixed input area and header */
       padding-top: 50px; 
       padding-bottom: 70px;
     }
-    /* NEW: Chat Header for Status */
     .chat-header {
         position: fixed;
         top: 0;
@@ -47,7 +45,7 @@
         margin-left: 8px;
     }
     .online {
-        background-color: #25d366; /* WhatsApp Green */
+        background-color: #25d366;
     }
     .message {
       margin-bottom: 8px;
@@ -77,14 +75,13 @@
     }
     .timestamp-tick {
         font-size: 12px;
-        color: #929292; /* Gray for single tick */
+        color: #929292;
         float: right;
         margin-left: 8px;
         line-height: 1.5;
     }
-    /* NEW: Context Menu for Delete */
     .context-menu {
-        position: fixed; /* Use fixed for better mobile handling */
+        position: fixed;
         background: white;
         border: 1px solid #ccc;
         border-radius: 4px;
@@ -96,7 +93,7 @@
         padding: 10px 20px;
         cursor: pointer;
         font-size: 16px;
-        color: #c0392b; /* Red for delete */
+        color: #c0392b;
     }
     .context-menu-item:hover {
         background-color: #f0f0f0;
@@ -136,9 +133,70 @@
       align-items: center;
       flex-shrink: 0;
     }
+
+    /* 🤩 NEW STYLES FOR THE NAME MODAL 🤩 */
+    #nameModal {
+        display: none; /* Default hidden */
+        position: fixed;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.7);
+        z-index: 100;
+        justify-content: center;
+        align-items: center;
+    }
+    .modal-content {
+        background-color: #fff;
+        padding: 30px;
+        border-radius: 10px;
+        text-align: center;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+        max-width: 300px;
+        width: 90%;
+        animation: fadeIn 0.3s ease-out;
+    }
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(-20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    #nameInput {
+        width: 100%;
+        padding: 10px;
+        margin: 15px 0;
+        border: 2px solid #ccc;
+        border-radius: 6px;
+        box-sizing: border-box;
+        font-size: 16px;
+    }
+    #submitName {
+        background-color: #075e54;
+        color: white;
+        padding: 10px 20px;
+        border: none;
+        border-radius: 20px;
+        cursor: pointer;
+        font-size: 16px;
+        transition: background-color 0.3s;
+    }
+    #submitName:hover {
+        background-color: #128c7e;
+    }
+    /* 🤩 END OF MODAL STYLES 🤩 */
+
   </style>
 </head>
 <body>
+  
+  <div id="nameModal" style="display: none;">
+    <div class="modal-content">
+      <h2>👋 Welcome!</h2>
+      <p>Aapka naam kya hai? (Enter your name to continue)</p>
+      <input type="text" id="nameInput" placeholder="Apna naam likhein (e.g., Zafar/Zohaib)">
+      <button id="submitName">Chat Shuru Karein</button>
+    </div>
+  </div>
   <div class="chat-header">
     ZAFI Chat 
     <span id="otherUserStatus" class="status-dot"></span>
@@ -178,53 +236,80 @@
     const auth = app.auth();
                                                  
     let currentUserId = null;
-    let currentUserName = null; // 👈 Naya variable
+    let currentUserName = null; 
     let otherUserId = null; 
-    const fixedUserIds = {
-        ZAFAR: "zafar_fixed_id",
-        ZOHAIB: "zohaib_fixed_id"
-    };
     
-    // --- SIGN-IN AUR NAME PROMPT KA LOGIC ---
+    // --- MODAL ELEMENTS ---
+    const nameModal = document.getElementById('nameModal');
+    const nameInput = document.getElementById('nameInput');
+    const submitNameButton = document.getElementById('submitName');
+    
+    // --- FIREBASE REFERENCES ---
+    const messagesRef = database.ref('messages');
+    const messagesDiv = document.getElementById('messages');
+    const messageInput = document.getElementById('messageInput');
+    const contextMenu = document.getElementById('contextMenu');
+    const deleteOption = document.getElementById('deleteOption');
+
+    
+    // --- MAIN SIGN-IN LOGIC ---
     auth.signInAnonymously()
-      .then(async (userCredential) => { // async function banaya
+      .then(async (userCredential) => {
         currentUserId = userCredential.user.uid;
         console.log("Current User ID:", currentUserId);
         
-        // 1. Users node ka reference
         const userRef = database.ref('users/' + currentUserId);
-        
-        // 2. Dekho ke pehle se koi name save hai ya nahi
         const nameSnapshot = await userRef.child('displayName').once('value');
         
         if (nameSnapshot.exists()) {
+            // Agar naam pehle se save hai
             currentUserName = nameSnapshot.val();
+            // Sab kuch shuru kardo
+            setupUserStatus(currentUserId);
+            startMessageListener(); 
         } else {
-            // 3. Agar name save nahi hai toh user se pucho
-            let name = prompt("Aapka naam kya hai? (Please enter your name for the chat)");
-            
-            // Jab tak naam na mile tab tak puchte raho
-            while (!name || name.trim() === "") {
-                name = prompt("Naam zaroor dein taake doosre aapko pehchaan saken. (Please provide a name)");
-            }
-            
-            currentUserName = name.trim();
-            // 4. Naam ko Firebase mein users node ke neeche save kardo
-            userRef.child('displayName').set(currentUserName);
+            // Agar naam save nahi hai, toh stylish modal dikhao
+            nameModal.style.display = 'flex';
+            nameInput.focus(); // Input box pe focus karo
         }
-        
-        console.log("Current User Name:", currentUserName);
-        
-        // --- NEW FEATURE 1: Online Status Setup ---
-        setupUserStatus(currentUserId);
-        
-        // 5. Sirf iske baad messages ko load karna shuru karo
-        startMessageListener(); 
         
       })
       .catch((error) => {
         console.error("Sign-in error:", error);
       });
+
+    // --- MODAL SUBMIT LOGIC ---
+    function handleNameSubmission() {
+        let name = nameInput.value;
+        
+        if (!name || name.trim() === "") {
+            alert("Naam zaroor dein taake doosre aapko pehchaan saken.");
+            return;
+        }
+        
+        currentUserName = name.trim();
+        const userRef = database.ref('users/' + currentUserId);
+        // Naam ko Firebase mein save kardo
+        userRef.child('displayName').set(currentUserName)
+            .then(() => {
+                // Modal band kardo
+                nameModal.style.display = 'none';
+                console.log("Current User Name set:", currentUserName);
+                
+                // Sab kuch shuru kardo
+                setupUserStatus(currentUserId);
+                startMessageListener();
+            })
+            .catch(error => console.error("Error saving name:", error));
+    }
+
+    // Button click aur Enter key par naam submit karo
+    submitNameButton.addEventListener('click', handleNameSubmission);
+    nameInput.addEventListener('keypress', function (e) {
+        if (e.key === 'Enter') {
+            handleNameSubmission();
+        }
+    });
 
     
     // --- NEW FEATURE 1: Online Status Logic ---
@@ -237,7 +322,7 @@
             userStatusRef.set(isOnline);
         });
 
-        // Other user ID is still hardcoded for status check (needs proper multi-user logic)
+        // Other user ID is still hardcoded for status check 
         otherUserId = 'zohaib_fixed_id'; 
         
         database.ref('status/' + otherUserId).on('value', (snapshot) => {
@@ -260,12 +345,7 @@
         });
     }
 
-    const messagesRef = database.ref('messages');
-    const messagesDiv = document.getElementById('messages');
-    const messageInput = document.getElementById('messageInput');
-    const contextMenu = document.getElementById('contextMenu');
-    const deleteOption = document.getElementById('deleteOption');
-
+    // --- MESSAGE SEND/DELETE SETUP ---
     document.getElementById('sendButton').addEventListener('click', sendMessage);
     messageInput.addEventListener('keypress', function (e) {
       if (e.key === 'Enter') {
@@ -273,14 +353,14 @@
       }
     });
 
-    // Close context menu when clicking anywhere else
     document.addEventListener('click', () => {
         contextMenu.style.display = 'none';
     });
 
     function sendMessage() {
       const messageText = messageInput.value;
-      // 👈 NEW CHECK: Agar naam set nahi hua toh message nahi bhejo
+      
+      // Check for name/ID
       if (messageText.trim() === "" || !currentUserId || !currentUserName) {
         if (!currentUserName) {
             alert("Pehle apna naam set kijiye! (Please set your name first!)");
@@ -291,7 +371,7 @@
       messagesRef.push({
         text: messageText,
         senderId: currentUserId,
-        senderName: currentUserName, // 👈 Naam ko message object mein daal diya
+        senderName: currentUserName, 
         timestamp: Date.now()
       });
       messageInput.value = '';
@@ -334,7 +414,7 @@
         messageKeyToDelete = key;
     }
 
-    // --- Message Display Logic (New Function) ---
+    // --- Message Display Logic ---
     function startMessageListener() {
         messagesRef.on('value', (snapshot) => {
             messagesDiv.innerHTML = '';
@@ -343,7 +423,6 @@
                 const messageKey = childSnapshot.key;
                 const isSentByMe = (message.senderId === currentUserId);
                 
-                // 👈 NEW: Message mein save kiye hue naam ko use kiya
                 const senderName = message.senderName || (isSentByMe ? "Unknown (Me)" : "Unknown (Other)");
                 
                 const messageElement = document.createElement('div');
