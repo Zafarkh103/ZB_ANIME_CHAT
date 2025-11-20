@@ -178,26 +178,48 @@
     const auth = app.auth();
                                                  
     let currentUserId = null;
-    let otherUserId = null; // Assuming only two users: ZAFAR and ZOHAIB
+    let currentUserName = null; // 👈 Naya variable
+    let otherUserId = null; 
     const fixedUserIds = {
-        ZAFAR: "zafar_fixed_id", // Replace with a real fixed ID if needed
-        ZOHAIB: "zohaib_fixed_id" // Replace with a real fixed ID if needed
+        ZAFAR: "zafar_fixed_id",
+        ZOHAIB: "zohaib_fixed_id"
     };
     
-    // Use an existing user ID for simulation if you know one. 
-    // For Anonymous sign-in, the ID changes every time unless you use persistent IDs.
-
+    // --- SIGN-IN AUR NAME PROMPT KA LOGIC ---
     auth.signInAnonymously()
-      .then((userCredential) => {
+      .then(async (userCredential) => { // async function banaya
         currentUserId = userCredential.user.uid;
-        // Logic to determine the "other" user based on who is current.
-        // This logic is complex in anonymous chat, but for a 2-person simulation:
-        // You can simplify: whoever logs in first gets one ID, second gets the other.
-        // For now, we will use the actual UID for current and track status there.
         console.log("Current User ID:", currentUserId);
+        
+        // 1. Users node ka reference
+        const userRef = database.ref('users/' + currentUserId);
+        
+        // 2. Dekho ke pehle se koi name save hai ya nahi
+        const nameSnapshot = await userRef.child('displayName').once('value');
+        
+        if (nameSnapshot.exists()) {
+            currentUserName = nameSnapshot.val();
+        } else {
+            // 3. Agar name save nahi hai toh user se pucho
+            let name = prompt("Aapka naam kya hai? (Please enter your name for the chat)");
+            
+            // Jab tak naam na mile tab tak puchte raho
+            while (!name || name.trim() === "") {
+                name = prompt("Naam zaroor dein taake doosre aapko pehchaan saken. (Please provide a name)");
+            }
+            
+            currentUserName = name.trim();
+            // 4. Naam ko Firebase mein users node ke neeche save kardo
+            userRef.child('displayName').set(currentUserName);
+        }
+        
+        console.log("Current User Name:", currentUserName);
         
         // --- NEW FEATURE 1: Online Status Setup ---
         setupUserStatus(currentUserId);
+        
+        // 5. Sirf iske baad messages ko load karna shuru karo
+        startMessageListener(); 
         
       })
       .catch((error) => {
@@ -211,15 +233,11 @@
         const isOnline = { state: 'online', last_seen: firebase.database.ServerValue.TIMESTAMP };
         const isOffline = { state: 'offline', last_seen: firebase.database.ServerValue.TIMESTAMP };
 
-        // 1. Set status to offline when user disconnects
         userStatusRef.onDisconnect().set(isOffline).then(() => {
-            // 2. Set status to online immediately
             userStatusRef.set(isOnline);
         });
 
-        // 3. Listen for other user's status (This assumes we know the other user's UID)
-        // Since we are using anonymous sign-in, let's assume the status we check is for a FIXED 'ZOHAIB' profile
-        // Replace 'zohaib_fixed_id' with the actual UID of Zohaib if you know it, or manage IDs differently.
+        // Other user ID is still hardcoded for status check (needs proper multi-user logic)
         otherUserId = 'zohaib_fixed_id'; 
         
         database.ref('status/' + otherUserId).on('value', (snapshot) => {
@@ -262,13 +280,18 @@
 
     function sendMessage() {
       const messageText = messageInput.value;
-      if (messageText.trim() === "" || !currentUserId) {
+      // 👈 NEW CHECK: Agar naam set nahi hua toh message nahi bhejo
+      if (messageText.trim() === "" || !currentUserId || !currentUserName) {
+        if (!currentUserName) {
+            alert("Pehle apna naam set kijiye! (Please set your name first!)");
+        }
         return;
       }
                                       
       messagesRef.push({
         text: messageText,
         senderId: currentUserId,
+        senderName: currentUserName, // 👈 Naam ko message object mein daal diya
         timestamp: Date.now()
       });
       messageInput.value = '';
@@ -293,16 +316,14 @@
     });
 
     function showContextMenu(e, key) {
-        e.preventDefault(); // Stop default browser menu
-        e.stopPropagation(); // Stop document click from closing it immediately
+        e.preventDefault(); 
+        e.stopPropagation(); 
 
         contextMenu.style.display = 'block';
         
-        // Position the menu near the click/touch point
         contextMenu.style.left = e.clientX + 'px';
         contextMenu.style.top = e.clientY + 'px';
         
-        // Handle screen edges
         if (e.clientX + contextMenu.offsetWidth > window.innerWidth) {
             contextMenu.style.left = window.innerWidth - contextMenu.offsetWidth - 10 + 'px';
         }
@@ -313,57 +334,57 @@
         messageKeyToDelete = key;
     }
 
-    // --- Message Display Logic ---
-    messagesRef.on('value', (snapshot) => {
-      messagesDiv.innerHTML = '';
-      snapshot.forEach((childSnapshot) => {
-        const message = childSnapshot.val();
-        const messageKey = childSnapshot.key;
-        const isSentByMe = (message.senderId === currentUserId);
-        const senderName = isSentByMe ? "Z (ZAFAR)" : "ZOHAIB";
-        
-        const messageElement = document.createElement('div');
-        messageElement.classList.add('message', isSentByMe ? 'sent' : 'received');
-        
-        // Format time (Optional but good practice)
-        const time = new Date(message.timestamp || Date.now()).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-        
-        // Basic Single Tick (For sent messages only)
-        const tickHtml = isSentByMe ? `<span class="timestamp-tick">${time} ✓</span>` : '';
-        
-        messageElement.innerHTML = `
-            <span class="sender-name">${senderName}</span>
-            ${message.text}
-            ${tickHtml}
-        `;
-        
-        // --- ADD DELETE EVENT LISTENERS ---
-        if (isSentByMe) {
-            // Desktop (Right Click)
-            messageElement.addEventListener('contextmenu', (e) => {
-                showContextMenu(e, messageKey);
+    // --- Message Display Logic (New Function) ---
+    function startMessageListener() {
+        messagesRef.on('value', (snapshot) => {
+            messagesDiv.innerHTML = '';
+            snapshot.forEach((childSnapshot) => {
+                const message = childSnapshot.val();
+                const messageKey = childSnapshot.key;
+                const isSentByMe = (message.senderId === currentUserId);
+                
+                // 👈 NEW: Message mein save kiye hue naam ko use kiya
+                const senderName = message.senderName || (isSentByMe ? "Unknown (Me)" : "Unknown (Other)");
+                
+                const messageElement = document.createElement('div');
+                messageElement.classList.add('message', isSentByMe ? 'sent' : 'received');
+                
+                const time = new Date(message.timestamp || Date.now()).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                
+                const tickHtml = isSentByMe ? `<span class="timestamp-tick">${time} ✓</span>` : '';
+                
+                messageElement.innerHTML = `
+                    <span class="sender-name">${senderName}</span>
+                    ${message.text}
+                    ${tickHtml}
+                `;
+                
+                // --- ADD DELETE EVENT LISTENERS ---
+                if (isSentByMe) {
+                    messageElement.addEventListener('contextmenu', (e) => {
+                        showContextMenu(e, messageKey);
+                    });
+                    
+                    let pressTimer;
+                    messageElement.addEventListener('touchstart', (e) => {
+                        e.stopPropagation(); 
+                        pressTimer = setTimeout(() => {
+                            showContextMenu(e, messageKey);
+                        }, 800); 
+                    });
+                    messageElement.addEventListener('touchend', () => {
+                        clearTimeout(pressTimer);
+                    });
+                    messageElement.addEventListener('touchmove', () => {
+                        clearTimeout(pressTimer);
+                    });
+                }
+                
+                messagesDiv.appendChild(messageElement);
             });
-            
-            // Mobile (Long Press - using a simple timer)
-            let pressTimer;
-            messageElement.addEventListener('touchstart', (e) => {
-                e.stopPropagation(); 
-                pressTimer = setTimeout(() => {
-                    showContextMenu(e, messageKey);
-                }, 800); // 800ms for a long press
-            });
-            messageElement.addEventListener('touchend', () => {
-                clearTimeout(pressTimer);
-            });
-            messageElement.addEventListener('touchmove', () => {
-                clearTimeout(pressTimer); // Cancel if finger moves
-            });
-        }
-        
-        messagesDiv.appendChild(messageElement);
-      });
-      messagesDiv.scrollTop = messagesDiv.scrollHeight;
-    });
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        });
+    }
   </script>
 </body>
 </html>
