@@ -20,6 +20,13 @@
       overflow-y: auto;
       /* WhatsApp background pattern-like color */
       background-color: #e5ddd5; 
+      /* --- CHANGE 1: Wallpaper Image added --- */
+      background-image: url('box Wallpaper.png'); 
+      background-size: cover; /* Image ko poore container par cover karega */
+      background-position: center; /* Image ko center mein rakhega */
+      /* Agar image load na ho toh fallback color */
+      background-color: #e5ddd5; 
+      /* --- END CHANGE 1 --- */
       display: flex;
       flex-direction: column;
       padding-top: 50px; 
@@ -50,7 +57,7 @@
         background-color: #25d366; /* WhatsApp Online Green */
     }
     .message {
-      margin-bottom: 12px; /* Increased margin for tail space */
+      margin-bottom: 8px;
       padding: 10px 14px;
       border-radius: 8px;
       max-width: 80%;
@@ -60,49 +67,16 @@
       font-size: 18px;
       box-shadow: 0 1px 0.5px rgba(0, 0, 0, 0.13); /* Slight WhatsApp shadow */
     }
-    
-    /* --- CHAT BUBBLE TAIL CSS --- */
-    /* Sent messages (Right Side) */
     .sent {
       background-color: #dcf8c6;
       align-self: flex-end;
       margin-left: auto;
-      /* Right tail position */
-      border-top-right-radius: 0; 
     }
-    .sent::before {
-        content: "";
-        position: absolute;
-        top: 0;
-        right: -10px; /* Position the tail outside */
-        border: 5px solid transparent;
-        border-top-color: #dcf8c6; /* Match bubble background */
-        border-right-color: #dcf8c6;
-        filter: drop-shadow(0 1px 0.5px rgba(0, 0, 0, 0.13)); /* Apply bubble shadow to tail */
-        transform: rotate(135deg);
-    }
-
-    /* Received messages (Left Side) */
     .received {
       background-color: #ffffff;
       align-self: flex-start;
       margin-right: auto;
-      /* Left tail position */
-      border-top-left-radius: 0; 
     }
-    .received::before {
-        content: "";
-        position: absolute;
-        top: 0;
-        left: -10px; /* Position the tail outside */
-        border: 5px solid transparent;
-        border-top-color: #ffffff; /* Match bubble background */
-        border-left-color: #ffffff;
-        filter: drop-shadow(0 1px 0.5px rgba(0, 0, 0, 0.13)); /* Apply bubble shadow to tail */
-        transform: rotate(-135deg);
-    }
-    /* --- END CHAT BUBBLE TAIL CSS --- */
-
     .sender-name {
       font-size: 14px;
       color: #777;
@@ -117,13 +91,6 @@
         margin-left: 8px;
         line-height: 1.5;
     }
-    /* --- DOUBLE TICK CSS --- */
-    .double-tick {
-        color: #4fc3f7; /* WhatsApp Blue Read Tick color */
-        margin-left: 2px;
-        font-weight: bold;
-    }
-    /* --- END DOUBLE TICK CSS --- */
     .context-menu {
         position: fixed;
         background: white;
@@ -283,7 +250,7 @@
                                                  
     let currentUserId = null;
     let currentUserName = null; 
-    let otherUserId = 'zohaib_fixed_id'; // Hardcoded for fixed chat partner
+    let otherUserId = null; 
     
     // --- MODAL ELEMENTS ---
     const nameModal = document.getElementById('nameModal');
@@ -299,6 +266,7 @@
 
     
     // --- MAIN SIGN-IN LOGIC ---
+    // Jaise hi file load ho, sign-in start ho jaye.
     auth.signInAnonymously()
       .then(async (userCredential) => {
         currentUserId = userCredential.user.uid;
@@ -308,10 +276,12 @@
         const nameSnapshot = await userRef.child('displayName').once('value');
         
         if (nameSnapshot.exists()) {
+            // Agar naam pehle se save hai, toh use karo aur chat shuru karo.
             currentUserName = nameSnapshot.val();
             setupUserStatus(currentUserId);
             startMessageListener(); 
         } else {
+            // Agar naam save nahi hai, toh stylish modal dikhao aur chat rok do.
             nameModal.style.display = 'flex';
             nameInput.focus(); 
         }
@@ -332,17 +302,21 @@
         
         currentUserName = name.trim();
         const userRef = database.ref('users/' + currentUserId);
+        // Naam ko Firebase mein save kardo
         userRef.child('displayName').set(currentUserName)
             .then(() => {
+                // Modal band kardo
                 nameModal.style.display = 'none';
                 console.log("Current User Name set:", currentUserName);
                 
+                // Naam save hotay hi chat shuru kardo
                 setupUserStatus(currentUserId);
                 startMessageListener();
             })
             .catch(error => console.error("Error saving name:", error));
     }
 
+    // Button click aur Enter key par naam submit karo
     submitNameButton.addEventListener('click', handleNameSubmission);
     nameInput.addEventListener('keypress', function (e) {
         if (e.key === 'Enter') {
@@ -351,59 +325,35 @@
     });
 
     
-    // --- NEW FEATURE 1: Online/Typing Status Logic ---
+    // --- NEW FEATURE 1: Online Status Logic ---
     function setupUserStatus(uid) {
         const userStatusRef = database.ref('status/' + uid);
-        
-        const isOnline = { state: 'online', isTyping: false, last_seen: firebase.database.ServerValue.TIMESTAMP };
-        const isOffline = { state: 'offline', isTyping: false, last_seen: firebase.database.ServerValue.TIMESTAMP };
-        
+        const isOnline = { state: 'online', last_seen: firebase.database.ServerValue.TIMESTAMP };
+        const isOffline = { state: 'offline', last_seen: firebase.database.ServerValue.TIMESTAMP };
+
         userStatusRef.onDisconnect().set(isOffline).then(() => {
             userStatusRef.set(isOnline);
         });
 
-        // Add event listeners for Typing Indicator
-        let typingTimeout;
-        const setTypingStatus = (isTyping) => {
-            userStatusRef.update({ isTyping: isTyping });
-        };
-
-        messageInput.addEventListener('input', () => {
-            setTypingStatus(true);
-            clearTimeout(typingTimeout);
-            // Agar 3 seconds tak typing ruk jaye toh isTyping: false kardo
-            typingTimeout = setTimeout(() => {
-                setTypingStatus(false);
-            }, 3000); 
-        });
-
-
-        // Other user status listener
+        // Other user ID is still hardcoded for status check 
+        otherUserId = 'zohaib_fixed_id'; 
+        
         database.ref('status/' + otherUserId).on('value', (snapshot) => {
             const status = snapshot.val();
             const dot = document.getElementById('otherUserStatus');
             const text = document.getElementById('statusText');
             
-            if (status) {
-                if (status.isTyping) {
-                    dot.classList.add('online');
-                    text.textContent = 'Typing...';
-                }
-                else if (status.state === 'online') {
-                    dot.classList.add('online');
-                    text.textContent = 'Online';
-                } else {
-                    dot.classList.remove('online');
-                    if (status.last_seen) {
-                        const date = new Date(status.last_seen);
-                        text.textContent = 'Last seen: ' + date.toLocaleTimeString();
-                    } else {
-                        text.textContent = 'Offline';
-                    }
-                }
+            if (status && status.state === 'online') {
+                dot.classList.add('online');
+                text.textContent = 'Online';
             } else {
-                 dot.classList.remove('online');
-                 text.textContent = 'Offline';
+                dot.classList.remove('online');
+                if (status && status.last_seen) {
+                    const date = new Date(status.last_seen);
+                    text.textContent = 'Last seen: ' + date.toLocaleTimeString();
+                } else {
+                    text.textContent = 'Offline';
+                }
             }
         });
     }
@@ -423,8 +373,10 @@
     function sendMessage() {
       const messageText = messageInput.value;
       
+      // Check for name/ID - agar naam set nahi toh message nahi bhejega
       if (messageText.trim() === "" || !currentUserId || !currentUserName) {
         if (!currentUserName) {
+            // Agar currentUserName null hai toh user ko modal dikha do
             nameModal.style.display = 'flex';
             nameInput.focus();
         }
@@ -438,12 +390,9 @@
         timestamp: Date.now()
       });
       messageInput.value = '';
-      
-      // Typing status ko immediately false kar do message bhejne ke baad
-      database.ref('status/' + currentUserId).update({ isTyping: false });
     }
     
-    // --- Message Delete Logic ---
+    // --- NEW FEATURE 2: Message Delete Logic ---
     let messageKeyToDelete = null;
 
     deleteOption.addEventListener('click', () => {
@@ -480,7 +429,7 @@
         messageKeyToDelete = key;
     }
 
-    // --- Message Display Logic ---
+    // --- Message Display Logic (CHANGE 2 APPLIED HERE) ---
     function startMessageListener() {
         messagesRef.on('value', (snapshot) => {
             messagesDiv.innerHTML = '';
@@ -496,12 +445,13 @@
                 
                 const time = new Date(message.timestamp || Date.now()).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
                 
-                // --- DOUBLE TICK IMPLEMENTATION (Visual) ---
-                // Sent messages ke liye ab Double Tick dikhega.
-                const tickHtml = isSentByMe ? 
-                    `<span class="timestamp-tick">${time} ✓<span class="double-tick">✓</span></span>` 
-                    : ''; 
-                // Note: Blue color ke liye aapko timestamp-tick aur double-tick CSS adjust karni hogi.
+                // --- CHANGE 2: Timestamp for Received Messages ---
+                // Sent message ke liye pehle se hi tick ke saath time tha.
+                // Ab received message ke liye sirf time ka span add kar rahe hain.
+                const tickHtml = `<span class="timestamp-tick">${time}${isSentByMe ? ' ✓' : ''}</span>`; 
+                // Note: Agar aap double tick (✓✓) chahte hain toh ' ✓' ki jagah ' ✓✓' use kar sakte hain.
+                // Abhi sirf single tick rakha hai, received mein sirf time aayega.
+                // --- END CHANGE 2 ---
                 
                 messageElement.innerHTML = `
                     <span class="sender-name">${senderName}</span>
