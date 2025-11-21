@@ -28,31 +28,36 @@
       padding-top: 50px; 
       padding-bottom: 120px;
     }
-    .chat-header {
-        position: fixed;
-        top: 0;
-        width: 100%;
-        background-color: #075e54; 
-        color: white;
-        padding: 10px 15px;
-        box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-        z-index: 10;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-    }
-    .header-left {
-        display: flex;
-        align-items: center;
-    }
-    .status-dot {
-        height: 10px;
-        width: 10px;
-        background-color: gray;
-        border-radius: 50%;
-        display: inline-block;
-        margin-left: 8px;
-    }
+  .chat-header {
+    position: fixed;
+    top: 0;
+    width: 100%;
+    background-color: #075e54; 
+    color: white;
+    padding: 6px 12px;  /* ← PADDING KAM KARDO */
+    box-shadow: 0 1px 3px rgba(0,0,0,0.2); /* ← SHADOW BHI KAM KARDO */
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 40px; /* ← FIXED HEIGHT ADD KARDO */
+    box-sizing: border-box; /* ← IMPORTANT */
+}
+
+.header-left {
+    display: flex;
+    align-items: center;
+    font-size: 16px; /* ← FONT SIZE KAM KARDO */
+}
+
+.status-dot {
+    height: 8px; /* ← SIZE KAM KARDO */
+    width: 8px;
+    background-color: gray;
+    border-radius: 50%;
+    display: inline-block;
+    margin-left: 6px; /* ← MARGIN KAM KARDO */
+}
     .online {
         background-color: #25d366;
     }
