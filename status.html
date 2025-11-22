@@ -1,0 +1,651 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Status - ZB WhatsApp Pro</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #f0f2f5;
+      color: #3b4a54;
+    }
+    
+    .header {
+      background: #075e54;
+      color: white;
+      padding: 15px;
+      position: fixed;
+      top: 0;
+      width: 100%;
+      z-index: 100;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .header-title {
+      font-size: 18px;
+      font-weight: 600;
+    }
+    
+    .header-icons {
+      display: flex;
+      gap: 15px;
+    }
+    
+    .icon-btn {
+      background: none;
+      border: none;
+      color: white;
+      font-size: 20px;
+      cursor: pointer;
+    }
+    
+    .container {
+      margin-top: 60px;
+      margin-bottom: 70px;
+      padding: 10px;
+    }
+    
+    /* My Status */
+    .my-status {
+      background: white;
+      margin: 10px;
+      border-radius: 10px;
+      overflow: hidden;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+    
+    .my-status-item {
+      display: flex;
+      align-items: center;
+      padding: 15px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    
+    .my-status-item:hover {
+      background: #f8f9fa;
+    }
+    
+    .my-avatar {
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      background: #128c7e;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      color: white;
+      margin-right: 15px;
+      position: relative;
+    }
+    
+    .add-status {
+      position: absolute;
+      bottom: 0;
+      right: 0;
+      background: #25d366;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      border: 2px solid white;
+    }
+    
+    .my-status-info {
+      flex: 1;
+    }
+    
+    .my-status-name {
+      font-weight: 600;
+      font-size: 16px;
+      margin-bottom: 5px;
+    }
+    
+    .my-status-text {
+      font-size: 14px;
+      color: #667781;
+    }
+    
+    /* Recent Updates */
+    .recent-updates {
+      margin: 20px 10px 10px 10px;
+      font-size: 14px;
+      color: #667781;
+      font-weight: 600;
+    }
+    
+    /* Status List */
+    .status-list {
+      background: white;
+      margin: 10px;
+      border-radius: 10px;
+      overflow: hidden;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+    
+    .status-item {
+      display: flex;
+      align-items: center;
+      padding: 15px;
+      border-bottom: 1px solid #f0f0f0;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    
+    .status-item:hover {
+      background: #f8f9fa;
+    }
+    
+    .status-avatar {
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      background: #25d366;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      color: white;
+      margin-right: 15px;
+      position: relative;
+    }
+    
+    .status-seen .status-avatar {
+      background: #667781;
+    }
+    
+    .status-indicator {
+      position: absolute;
+      bottom: 0;
+      right: 0;
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: #25d366;
+      border: 2px solid white;
+    }
+    
+    .status-seen .status-indicator {
+      display: none;
+    }
+    
+    .status-info {
+      flex: 1;
+    }
+    
+    .status-name {
+      font-weight: 600;
+      font-size: 16px;
+      margin-bottom: 5px;
+    }
+    
+    .status-time {
+      font-size: 14px;
+      color: #667781;
+    }
+    
+    /* Navigation Bar */
+    .nav-bar {
+      position: fixed;
+      bottom: 0;
+      width: 100%;
+      background: #fff;
+      display: flex;
+      justify-content: space-around;
+      padding: 8px 0;
+      border-top: 1px solid #e0e0e0;
+      z-index: 100;
+    }
+    
+    .nav-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 5px 10px;
+      cursor: pointer;
+      color: #666;
+      font-size: 12px;
+      transition: all 0.3s;
+      flex: 1;
+      text-align: center;
+    }
+    
+    .nav-item.active {
+      color: #128c7e;
+    }
+    
+    .nav-icon {
+      font-size: 20px;
+      margin-bottom: 2px;
+    }
+    
+    .nav-label {
+      font-size: 10px;
+    }
+    
+    /* Status View Modal */
+    .status-modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: black;
+      z-index: 1000;
+      flex-direction: column;
+      color: white;
+    }
+    
+    .status-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 15px;
+      background: rgba(0,0,0,0.5);
+    }
+    
+    .status-user-info {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    
+    .status-user-avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: #25d366;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .status-user-name {
+      font-weight: 600;
+    }
+    
+    .status-user-time {
+      font-size: 12px;
+      color: #ccc;
+    }
+    
+    .status-close {
+      background: none;
+      border: none;
+      color: white;
+      font-size: 20px;
+      cursor: pointer;
+    }
+    
+    .status-content {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    
+    .status-text {
+      font-size: 24px;
+      text-align: center;
+      line-height: 1.5;
+    }
+    
+    .status-image {
+      max-width: 100%;
+      max-height: 80vh;
+      border-radius: 10px;
+    }
+    
+    .status-progress {
+      display: flex;
+      gap: 5px;
+      padding: 10px;
+    }
+    
+    .progress-bar {
+      flex: 1;
+      height: 3px;
+      background: rgba(255,255,255,0.3);
+      border-radius: 2px;
+      overflow: hidden;
+    }
+    
+    .progress-fill {
+      height: 100%;
+      background: white;
+      width: 0%;
+      transition: width 0.1s linear;
+    }
+    
+    /* Create Status Modal */
+    .create-status-modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.8);
+      z-index: 1000;
+      justify-content: center;
+      align-items: center;
+    }
+    
+    .create-status-content {
+      background: white;
+      padding: 20px;
+      border-radius: 15px;
+      width: 90%;
+      max-width: 400px;
+      text-align: center;
+    }
+    
+    .create-status-title {
+      font-size: 18px;
+      font-weight: 600;
+      margin-bottom: 20px;
+    }
+    
+    .create-status-options {
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
+    
+    .status-option {
+      padding: 15px;
+      border: 2px dashed #ddd;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: all 0.3s;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      justify-content: center;
+    }
+    
+    .status-option:hover {
+      border-color: #128c7e;
+      background: #f0f8f5;
+    }
+    
+    .status-option-icon {
+      font-size: 24px;
+    }
+    
+    .status-option-text {
+      font-weight: 600;
+      color: #333;
+    }
+  </style>
+</head>
+<body>
+  <!-- Header -->
+  <div class="header">
+    <div class="header-title">Status</div>
+    <div class="header-icons">
+      <button class="icon-btn">📷</button>
+      <button class="icon-btn" id="menuBtn">⋮</button>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <div class="container">
+    <!-- My Status -->
+    <div class="my-status">
+      <div class="my-status-item" id="myStatusItem">
+        <div class="my-avatar">
+          <span>👤</span>
+          <div class="add-status">+</div>
+        </div>
+        <div class="my-status-info">
+          <div class="my-status-name">My Status</div>
+          <div class="my-status-text">Tap to add status update</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Recent Updates -->
+    <div class="recent-updates">Recent updates</div>
+
+    <!-- Status List -->
+    <div class="status-list">
+      <!-- Status 1 -->
+      <div class="status-item" data-status="text" data-text="Enjoying the weekend! 🌞">
+        <div class="status-avatar">
+          <span>👨</span>
+          <div class="status-indicator"></div>
+        </div>
+        <div class="status-info">
+          <div class="status-name">Zafar Ali</div>
+          <div class="status-time">Just now</div>
+        </div>
+      </div>
+
+      <!-- Status 2 -->
+      <div class="status-item" data-status="text" data-text="Working on new project 💼">
+        <div class="status-avatar">
+          <span>👩</span>
+          <div class="status-indicator"></div>
+        </div>
+        <div class="status-info">
+          <div class="status-name">Ayesha Khan</div>
+          <div class="status-time">15 minutes ago</div>
+        </div>
+      </div>
+
+      <!-- Status 3 -->
+      <div class="status-item status-seen" data-status="text" data-text="Beautiful sunset today 🌅">
+        <div class="status-avatar">
+          <span>👨</span>
+        </div>
+        <div class="status-info">
+          <div class="status-name">Bilal Ahmed</div>
+          <div class="status-time">1 hour ago</div>
+        </div>
+      </div>
+
+      <!-- Status 4 -->
+      <div class="status-item status-seen" data-status="text" data-text="Coffee time! ☕">
+        <div class="status-avatar">
+          <span>👩</span>
+        </div>
+        <div class="status-info">
+          <div class="status-name">Sara Khan</div>
+          <div class="status-time">2 hours ago</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Status View Modal -->
+  <div class="status-modal" id="statusModal">
+    <div class="status-progress" id="statusProgress">
+      <div class="progress-bar"><div class="progress-fill"></div></div>
+    </div>
+    
+    <div class="status-header">
+      <div class="status-user-info">
+        <div class="status-user-avatar" id="statusUserAvatar">👨</div>
+        <div>
+          <div class="status-user-name" id="statusUserName">Zafar Ali</div>
+          <div class="status-user-time" id="statusUserTime">Just now</div>
+        </div>
+      </div>
+      <button class="status-close" id="statusClose">✕</button>
+    </div>
+    
+    <div class="status-content" id="statusContent">
+      <div class="status-text" id="statusText">Enjoying the weekend! 🌞</div>
+    </div>
+  </div>
+
+  <!-- Create Status Modal -->
+  <div class="create-status-modal" id="createStatusModal">
+    <div class="create-status-content">
+      <div class="create-status-title">Create Status</div>
+      <div class="create-status-options">
+        <div class="status-option" id="textStatusBtn">
+          <div class="status-option-icon">📝</div>
+          <div class="status-option-text">Text Status</div>
+        </div>
+        <div class="status-option" id="photoStatusBtn">
+          <div class="status-option-icon">📷</div>
+          <div class="status-option-text">Photo Status</div>
+        </div>
+        <div class="status-option" id="videoStatusBtn">
+          <div class="status-option-icon">🎥</div>
+          <div class="status-option-text">Video Status</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Navigation Bar -->
+  <div class="nav-bar">
+    <div class="nav-item" onclick="window.location.href='index.html'">
+      <div class="nav-icon">💬</div>
+      <div class="nav-label">Chats</div>
+    </div>
+    <div class="nav-item" onclick="window.location.href='groups.html'">
+      <div class="nav-icon">👥</div>
+      <div class="nav-label">Groups</div>
+    </div>
+    <div class="nav-item" onclick="window.location.href='calls.html'">
+      <div class="nav-icon">📞</div>
+      <div class="nav-label">Calls</div>
+    </div>
+    <div class="nav-item active" onclick="window.location.href='status.html'">
+      <div class="nav-icon">📢</div>
+      <div class="nav-label">Status</div>
+    </div>
+    <div class="nav-item" onclick="window.location.href='settings.html'">
+      <div class="nav-icon">⚙️</div>
+      <div class="nav-label">Settings</div>
+    </div>
+  </div>
+
+  <script>
+    // Status Functionality
+    const myStatusItem = document.getElementById('myStatusItem');
+    const statusModal = document.getElementById('statusModal');
+    const createStatusModal = document.getElementById('createStatusModal');
+    const statusClose = document.getElementById('statusClose');
+    const statusItems = document.querySelectorAll('.status-item');
+    const progressFill = document.querySelector('.progress-fill');
+    const statusUserName = document.getElementById('statusUserName');
+    const statusUserTime = document.getElementById('statusUserTime');
+    const statusText = document.getElementById('statusText');
+    const statusUserAvatar = document.getElementById('statusUserAvatar');
+    
+    // Create status buttons
+    const textStatusBtn = document.getElementById('textStatusBtn');
+    const photoStatusBtn = document.getElementById('photoStatusBtn');
+    const videoStatusBtn = document.getElementById('videoStatusBtn');
+
+    let statusTimer;
+    let statusDuration = 5000; // 5 seconds
+
+    // Open create status modal
+    myStatusItem.addEventListener('click', () => {
+      createStatusModal.style.display = 'flex';
+    });
+
+    // Create text status
+    textStatusBtn.addEventListener('click', () => {
+      createStatusModal.style.display = 'none';
+      const statusText = prompt('Enter your status text:');
+      if (statusText) {
+        alert(`Status posted: "${statusText}"`);
+        // Here you would save to Firebase
+      }
+    });
+
+    // Create photo status
+    photoStatusBtn.addEventListener('click', () => {
+      createStatusModal.style.display = 'none';
+      alert('Photo status feature - would open camera/gallery');
+    });
+
+    // Create video status
+    videoStatusBtn.addEventListener('click', () => {
+      createStatusModal.style.display = 'none';
+      alert('Video status feature - would open camera');
+    });
+
+    // View status
+    statusItems.forEach(item => {
+      item.addEventListener('click', () => {
+        const name = item.querySelector('.status-name').textContent;
+        const time = item.querySelector('.status-time').textContent;
+        const avatar = item.querySelector('.status-avatar span').textContent;
+        const statusType = item.getAttribute('data-status');
+        const text = item.getAttribute('data-text');
+        
+        statusUserName.textContent = name;
+        statusUserTime.textContent = time;
+        statusUserAvatar.textContent = avatar;
+        statusText.textContent = text;
+        
+        statusModal.style.display = 'flex';
+        startStatusProgress();
+        
+        // Mark as seen
+        item.classList.add('status-seen');
+        item.querySelector('.status-indicator')?.remove();
+      });
+    });
+
+    // Close status view
+    statusClose.addEventListener('click', () => {
+      statusModal.style.display = 'none';
+      stopStatusProgress();
+    });
+
+    // Status progress bar
+    function startStatusProgress() {
+      progressFill.style.width = '0%';
+      let width = 0;
+      
+      statusTimer = setInterval(() => {
+        if (width >= 100) {
+          clearInterval(statusTimer);
+          statusModal.style.display = 'none';
+        } else {
+          width += 1;
+          progressFill.style.width = width + '%';
+        }
+      }, statusDuration / 100);
+    }
+
+    function stopStatusProgress() {
+      clearInterval(statusTimer);
+      progressFill.style.width = '0%';
+    }
+
+    // Close modals when clicking outside
+    createStatusModal.addEventListener('click', (e) => {
+      if (e.target === createStatusModal) {
+        createStatusModal.style.display = 'none';
+      }
+    });
+
+    console.log("✅ Status page loaded successfully!");
+  </script>
+</body>
+</html>

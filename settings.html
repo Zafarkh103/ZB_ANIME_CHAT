@@ -1,0 +1,676 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Settings - ZB WhatsApp Pro</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #f0f2f5;
+      color: #3b4a54;
+    }
+    
+    .header {
+      background: #075e54;
+      color: white;
+      padding: 15px;
+      position: fixed;
+      top: 0;
+      width: 100%;
+      z-index: 100;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .header-title {
+      font-size: 18px;
+      font-weight: 600;
+    }
+    
+    .header-icons {
+      display: flex;
+      gap: 15px;
+    }
+    
+    .icon-btn {
+      background: none;
+      border: none;
+      color: white;
+      font-size: 20px;
+      cursor: pointer;
+    }
+    
+    .container {
+      margin-top: 60px;
+      margin-bottom: 70px;
+      padding: 10px;
+    }
+    
+    /* Profile Section */
+    .profile-section {
+      background: white;
+      margin: 10px;
+      border-radius: 10px;
+      overflow: hidden;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+    
+    .profile-item {
+      display: flex;
+      align-items: center;
+      padding: 20px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    
+    .profile-item:hover {
+      background: #f8f9fa;
+    }
+    
+    .profile-avatar {
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      background: #128c7e;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      color: white;
+      margin-right: 15px;
+    }
+    
+    .profile-info {
+      flex: 1;
+    }
+    
+    .profile-name {
+      font-weight: 600;
+      font-size: 18px;
+      margin-bottom: 5px;
+    }
+    
+    .profile-status {
+      font-size: 14px;
+      color: #667781;
+    }
+    
+    .profile-qr {
+      font-size: 20px;
+      color: #128c7e;
+    }
+    
+    /* Settings List */
+    .settings-list {
+      background: white;
+      margin: 20px 10px 10px 10px;
+      border-radius: 10px;
+      overflow: hidden;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+    
+    .settings-section {
+      border-bottom: 1px solid #f0f0f0;
+    }
+    
+    .section-title {
+      padding: 15px 20px;
+      font-size: 14px;
+      color: #667781;
+      font-weight: 600;
+      background: #f8f9fa;
+    }
+    
+    .settings-item {
+      display: flex;
+      align-items: center;
+      padding: 15px 20px;
+      cursor: pointer;
+      transition: background 0.2s;
+      border-bottom: 1px solid #f8f9fa;
+    }
+    
+    .settings-item:hover {
+      background: #f8f9fa;
+    }
+    
+    .settings-item:last-child {
+      border-bottom: none;
+    }
+    
+    .settings-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: #25d366;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      color: white;
+      margin-right: 15px;
+    }
+    
+    .settings-info {
+      flex: 1;
+    }
+    
+    .settings-name {
+      font-weight: 600;
+      font-size: 16px;
+      margin-bottom: 3px;
+    }
+    
+    .settings-desc {
+      font-size: 13px;
+      color: #667781;
+    }
+    
+    .settings-arrow {
+      font-size: 16px;
+      color: #999;
+    }
+    
+    /* Toggle Switch */
+    .toggle-switch {
+      position: relative;
+      display: inline-block;
+      width: 50px;
+      height: 24px;
+    }
+    
+    .toggle-switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+    
+    .toggle-slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: #ccc;
+      transition: .4s;
+      border-radius: 24px;
+    }
+    
+    .toggle-slider:before {
+      position: absolute;
+      content: "";
+      height: 16px;
+      width: 16px;
+      left: 4px;
+      bottom: 4px;
+      background-color: white;
+      transition: .4s;
+      border-radius: 50%;
+    }
+    
+    input:checked + .toggle-slider {
+      background-color: #25d366;
+    }
+    
+    input:checked + .toggle-slider:before {
+      transform: translateX(26px);
+    }
+    
+    /* Navigation Bar */
+    .nav-bar {
+      position: fixed;
+      bottom: 0;
+      width: 100%;
+      background: #fff;
+      display: flex;
+      justify-content: space-around;
+      padding: 8px 0;
+      border-top: 1px solid #e0e0e0;
+      z-index: 100;
+    }
+    
+    .nav-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 5px 10px;
+      cursor: pointer;
+      color: #666;
+      font-size: 12px;
+      transition: all 0.3s;
+      flex: 1;
+      text-align: center;
+    }
+    
+    .nav-item.active {
+      color: #128c7e;
+    }
+    
+    .nav-icon {
+      font-size: 20px;
+      margin-bottom: 2px;
+    }
+    
+    .nav-label {
+      font-size: 10px;
+    }
+    
+    /* Modal Styles */
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.5);
+      z-index: 1000;
+      justify-content: center;
+      align-items: center;
+    }
+    
+    .modal-content {
+      background: white;
+      padding: 20px;
+      border-radius: 10px;
+      width: 90%;
+      max-width: 400px;
+    }
+    
+    .modal-title {
+      font-size: 18px;
+      font-weight: 600;
+      margin-bottom: 15px;
+      text-align: center;
+    }
+    
+    .modal-input {
+      width: 100%;
+      padding: 12px;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      margin-bottom: 15px;
+      font-size: 14px;
+    }
+    
+    .modal-buttons {
+      display: flex;
+      gap: 10px;
+    }
+    
+    .modal-btn {
+      flex: 1;
+      padding: 12px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+    
+    .modal-cancel {
+      background: #f0f0f0;
+      color: #333;
+    }
+    
+    .modal-save {
+      background: #128c7e;
+      color: white;
+    }
+  </style>
+</head>
+<body>
+  <!-- Header -->
+  <div class="header">
+    <div class="header-title">Settings</div>
+    <div class="header-icons">
+      <button class="icon-btn">🔍</button>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <div class="container">
+    <!-- Profile Section -->
+    <div class="profile-section">
+      <div class="profile-item" id="profileSettings">
+        <div class="profile-avatar">👤</div>
+        <div class="profile-info">
+          <div class="profile-name" id="userName">Zafar Ali</div>
+          <div class="profile-status" id="userStatus">Hey there! I'm using ZB WhatsApp Pro</div>
+        </div>
+        <div class="profile-qr">📷</div>
+      </div>
+    </div>
+
+    <!-- Settings List -->
+    <div class="settings-list">
+      <!-- Account Section -->
+      <div class="settings-section">
+        <div class="section-title">Account</div>
+        
+        <div class="settings-item" id="privacySettings">
+          <div class="settings-icon">🔒</div>
+          <div class="settings-info">
+            <div class="settings-name">Privacy</div>
+            <div class="settings-desc">Last seen, profile photo, about</div>
+          </div>
+          <div class="settings-arrow">›</div>
+        </div>
+        
+        <div class="settings-item" id="securitySettings">
+          <div class="settings-icon">🛡️</div>
+          <div class="settings-info">
+            <div class="settings-name">Security</div>
+            <div class="settings-desc">Two-step verification</div>
+          </div>
+          <div class="settings-arrow">›</div>
+        </div>
+      </div>
+
+      <!-- Chats Section -->
+      <div class="settings-section">
+        <div class="section-title">Chats</div>
+        
+        <div class="settings-item">
+          <div class="settings-icon">💬</div>
+          <div class="settings-info">
+            <div class="settings-name">Chat wallpaper</div>
+            <div class="settings-desc">Change chat background</div>
+          </div>
+          <div class="settings-arrow">›</div>
+        </div>
+        
+        <div class="settings-item">
+          <div class="settings-icon">💾</div>
+          <div class="settings-info">
+            <div class="settings-name">Chat backup</div>
+            <div class="settings-desc">Backup to Google Drive</div>
+          </div>
+          <div class="settings-arrow">›</div>
+        </div>
+        
+        <div class="settings-item">
+          <div class="settings-icon">📋</div>
+          <div class="settings-info">
+            <div class="settings-name">Chat history</div>
+            <div class="settings-desc">Export chat, clear history</div>
+          </div>
+          <div class="settings-arrow">›</div>
+        </div>
+      </div>
+
+      <!-- Notifications Section -->
+      <div class="settings-section">
+        <div class="section-title">Notifications</div>
+        
+        <div class="settings-item">
+          <div class="settings-icon">🔔</div>
+          <div class="settings-info">
+            <div class="settings-name">Message notifications</div>
+            <div class="settings-desc">Tone, vibration, popup</div>
+          </div>
+          <label class="toggle-switch">
+            <input type="checkbox" checked>
+            <span class="toggle-slider"></span>
+          </label>
+        </div>
+        
+        <div class="settings-item">
+          <div class="settings-icon">🔕</div>
+          <div class="settings-info">
+            <div class="settings-name">Group notifications</div>
+            <div class="settings-desc">Mute groups, custom tones</div>
+          </div>
+          <label class="toggle-switch">
+            <input type="checkbox" checked>
+            <span class="toggle-slider"></span>
+          </label>
+        </div>
+      </div>
+
+      <!-- App Section -->
+      <div class="settings-section">
+        <div class="section-title">App</div>
+        
+        <div class="settings-item" id="themeSettings">
+          <div class="settings-icon">🌙</div>
+          <div class="settings-info">
+            <div class="settings-name">Theme</div>
+            <div class="settings-desc">Light, Dark, System</div>
+          </div>
+          <div class="settings-arrow">›</div>
+        </div>
+        
+        <div class="settings-item">
+          <div class="settings-icon">🔄</div>
+          <div class="settings-info">
+            <div class="settings-name">App language</div>
+            <div class="settings-desc">English, Urdu, Arabic</div>
+          </div>
+          <div class="settings-arrow">›</div>
+        </div>
+        
+        <div class="settings-item">
+          <div class="settings-icon">📱</div>
+          <div class="settings-info">
+            <div class="settings-name">Storage and data</div>
+            <div class="settings-desc">Network usage, storage</div>
+          </div>
+          <div class="settings-arrow">›</div>
+        </div>
+      </div>
+
+      <!-- Help Section -->
+      <div class="settings-section">
+        <div class="section-title">Help</div>
+        
+        <div class="settings-item">
+          <div class="settings-icon">❓</div>
+          <div class="settings-info">
+            <div class="settings-name">Help center</div>
+            <div class="settings-desc">FAQs and contact info</div>
+          </div>
+          <div class="settings-arrow">›</div>
+        </div>
+        
+        <div class="settings-item">
+          <div class="settings-icon">ℹ️</div>
+          <div class="settings-info">
+            <div class="settings-name">About</div>
+            <div class="settings-desc">Version 2.0.1</div>
+          </div>
+          <div class="settings-arrow">›</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Logout Button -->
+    <div class="settings-list" style="margin-top: 20px;">
+      <div class="settings-item" id="logoutBtn" style="justify-content: center; color: #ff3b30;">
+        <div class="settings-name" style="color: #ff3b30;">Log Out</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Edit Profile Modal -->
+  <div class="modal" id="editProfileModal">
+    <div class="modal-content">
+      <div class="modal-title">Edit Profile</div>
+      <input type="text" class="modal-input" id="profileNameInput" placeholder="Your name">
+      <input type="text" class="modal-input" id="profileStatusInput" placeholder="About">
+      <div class="modal-buttons">
+        <button class="modal-btn modal-cancel" id="cancelEdit">Cancel</button>
+        <button class="modal-btn modal-save" id="saveProfile">Save</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Theme Modal -->
+  <div class="modal" id="themeModal">
+    <div class="modal-content">
+      <div class="modal-title">Choose Theme</div>
+      <div class="settings-item" data-theme="light">
+        <div class="settings-icon">☀️</div>
+        <div class="settings-info">
+          <div class="settings-name">Light</div>
+        </div>
+      </div>
+      <div class="settings-item" data-theme="dark">
+        <div class="settings-icon">🌙</div>
+        <div class="settings-info">
+          <div class="settings-name">Dark</div>
+        </div>
+      </div>
+      <div class="settings-item" data-theme="system">
+        <div class="settings-icon">⚙️</div>
+        <div class="settings-info">
+          <div class="settings-name">System Default</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Navigation Bar -->
+  <div class="nav-bar">
+    <div class="nav-item" onclick="window.location.href='index.html'">
+      <div class="nav-icon">💬</div>
+      <div class="nav-label">Chats</div>
+    </div>
+    <div class="nav-item" onclick="window.location.href='groups.html'">
+      <div class="nav-icon">👥</div>
+      <div class="nav-label">Groups</div>
+    </div>
+    <div class="nav-item" onclick="window.location.href='calls.html'">
+      <div class="nav-icon">📞</div>
+      <div class="nav-label">Calls</div>
+    </div>
+    <div class="nav-item" onclick="window.location.href='status.html'">
+      <div class="nav-icon">📢</div>
+      <div class="nav-label">Status</div>
+    </div>
+    <div class="nav-item active" onclick="window.location.href='settings.html'">
+      <div class="nav-icon">⚙️</div>
+      <div class="nav-label">Settings</div>
+    </div>
+  </div>
+
+  <script>
+    // Settings Functionality
+    const profileSettings = document.getElementById('profileSettings');
+    const themeSettings = document.getElementById('themeSettings');
+    const logoutBtn = document.getElementById('logoutBtn');
+    const editProfileModal = document.getElementById('editProfileModal');
+    const themeModal = document.getElementById('themeModal');
+    const cancelEdit = document.getElementById('cancelEdit');
+    const saveProfile = document.getElementById('saveProfile');
+    const profileNameInput = document.getElementById('profileNameInput');
+    const profileStatusInput = document.getElementById('profileStatusInput');
+    const userName = document.getElementById('userName');
+    const userStatus = document.getElementById('userStatus');
+
+    // Edit profile
+    profileSettings.addEventListener('click', () => {
+      profileNameInput.value = userName.textContent;
+      profileStatusInput.value = userStatus.textContent;
+      editProfileModal.style.display = 'flex';
+    });
+
+    // Save profile
+    saveProfile.addEventListener('click', () => {
+      const newName = profileNameInput.value.trim();
+      const newStatus = profileStatusInput.value.trim();
+      
+      if (newName) {
+        userName.textContent = newName;
+      }
+      if (newStatus) {
+        userStatus.textContent = newStatus;
+      }
+      
+      editProfileModal.style.display = 'none';
+      alert('Profile updated successfully!');
+    });
+
+    // Cancel edit
+    cancelEdit.addEventListener('click', () => {
+      editProfileModal.style.display = 'none';
+    });
+
+    // Theme settings
+    themeSettings.addEventListener('click', () => {
+      themeModal.style.display = 'flex';
+    });
+
+    // Theme selection
+    const themeItems = themeModal.querySelectorAll('.settings-item');
+    themeItems.forEach(item => {
+      item.addEventListener('click', () => {
+        const theme = item.getAttribute('data-theme');
+        alert(`Theme changed to ${theme}`);
+        themeModal.style.display = 'none';
+        
+        // Apply theme (simplified)
+        if (theme === 'dark') {
+          document.body.style.background = '#0d1418';
+          document.body.style.color = 'white';
+        } else {
+          document.body.style.background = '#f0f2f5';
+          document.body.style.color = '#3b4a54';
+        }
+      });
+    });
+
+    // Logout
+    logoutBtn.addEventListener('click', () => {
+      if (confirm('Are you sure you want to log out?')) {
+        alert('Logged out successfully!');
+        window.location.href = 'index.html';
+      }
+    });
+
+    // Close modals when clicking outside
+    editProfileModal.addEventListener('click', (e) => {
+      if (e.target === editProfileModal) {
+        editProfileModal.style.display = 'none';
+      }
+    });
+
+    themeModal.addEventListener('click', (e) => {
+      if (e.target === themeModal) {
+        themeModal.style.display = 'none';
+      }
+    });
+
+    // Toggle switches functionality
+    const toggleSwitches = document.querySelectorAll('.toggle-switch input');
+    toggleSwitches.forEach(toggle => {
+      toggle.addEventListener('change', function() {
+        const settingName = this.closest('.settings-item').querySelector('.settings-name').textContent;
+        const status = this.checked ? 'enabled' : 'disabled';
+        console.log(`${settingName}: ${status}`);
+      });
+    });
+
+    // Settings item clicks
+    const settingsItems = document.querySelectorAll('.settings-item[class*="settings"]');
+    settingsItems.forEach(item => {
+      if (!item.id.includes('theme') && !item.id.includes('profile')) {
+        item.addEventListener('click', () => {
+          const settingName = item.querySelector('.settings-name').textContent;
+          alert(`${settingName} settings - Feature coming soon!`);
+        });
+      }
+    });
+
+    console.log("✅ Settings page loaded successfully!");
+  </script>
+</body>
+</html>
