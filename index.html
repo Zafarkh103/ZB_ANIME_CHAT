@@ -4,145 +4,780 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>AnimeChat Pro - ZAFAR Rooms</title>
+  
   <style>
-    body{font-family:Arial,sans-serif;margin:0;padding:0;background:#000;color:#fff;width:100%;height:100vh;overflow:hidden}
-    .anime-bg{position:fixed;top:0;left:0;width:100%;height:100%;z-index:-2;background:#000 url('background.png') center/cover;opacity:0.5;filter:brightness(0.8) contrast(1.3) saturate(1.5)}
-    .red-light{position:fixed;top:0;left:0;width:100%;height:100%;background:radial-gradient(circle at 20% 50%,rgba(255,45,45,0.4) 0%,transparent 50%),radial-gradient(circle at 80% 20%,rgba(255,20,20,0.3) 0%,transparent 50%);z-index:-1;mix-blend-mode:screen}
-    .chat-header{position:fixed;top:0;width:100%;background:rgba(0,0,0,0.9);backdrop-filter:blur(15px);padding:12px 15px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid rgba(255,45,45,0.3);z-index:100;height:60px;box-sizing:border-box}
-    .header-left{display:flex;align-items:center;gap:12px}
-    .logo{width:40px;height:40px;border-radius:10px;overflow:hidden;border:2px solid #ff2d2d;background:linear-gradient(135deg,#ff2d2d,#b30000);display:flex;align-items:center;justify-content:center;font-size:22px;box-shadow:0 0 20px rgba(255,45,45,0.6)}
-    .header-text h2{margin:0;font-size:18px;color:#ff2d2d;text-shadow:0 0 10px rgba(255,45,45,0.5)}
-    .header-text small{font-size:12px;opacity:0.7}
-    .chat-container{position:fixed;top:60px;bottom:110px;width:100%;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:10px;box-sizing:border-box}
-    .messages{display:flex;flex-direction:column;gap:10px;min-height:100%}
-    .message{max-width:80%;padding:12px 16px;border-radius:18px;position:relative;word-wrap:break-word;backdrop-filter:blur(5px);animation:fadeIn 0.3s ease}
-    @keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
-    .sent{align-self:flex-end;background:linear-gradient(135deg,#0084ff,#0066cc);color:#fff;border-bottom-right-radius:5px;box-shadow:0 5px 20px rgba(0,132,255,0.4)}
-    .received{align-self:flex-start;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.1);border-bottom-left-radius:5px}
-    .sender-name{font-size:12px;font-weight:bold;margin-bottom:4px;opacity:0.9;display:flex;justify-content:space-between;align-items:center}
-    .message-time{font-size:10px;opacity:0.6;margin-left:10px}
-    .message-actions{display:none;gap:10px;margin-top:8px;padding-top:8px;border-top:1px solid rgba(255,255,255,0.1);justify-content:flex-end}
-    .message-action-btn{background:none;border:none;color:rgba(255,255,255,0.5);font-size:14px;cursor:pointer;padding:4px 8px;border-radius:4px;transition:all 0.2s}
-    .message-action-btn:hover{background:rgba(255,255,255,0.1);color:#fff}
-    .input-area{position:fixed;bottom:50px;width:100%;padding:12px 15px;background:rgba(0,0,0,0.85);backdrop-filter:blur(15px);border-top:1px solid rgba(255,45,45,0.2);display:flex;gap:10px;z-index:100;box-sizing:border-box}
-    #messageInput{flex:1;padding:12px 18px;border-radius:24px;border:none;background:rgba(255,255,255,0.1);color:#fff;font-size:14px;outline:none;border:1px solid rgba(255,45,45,0.3)}
-    #messageInput::placeholder{color:rgba(255,255,255,0.5)}
-    #sendButton{width:44px;height:44px;border-radius:50%;border:none;background:linear-gradient(135deg,#ff2d2d,#b30000);color:#fff;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 5px 15px rgba(255,45,45,0.5)}
-    .nav-bar{position:fixed;bottom:0;width:100%;background:rgba(0,0,0,0.95);backdrop-filter:blur(15px);display:flex;height:50px;border-top:1px solid rgba(255,45,45,0.2);z-index:100}
-    .nav-item{flex:1;text-align:center;color:rgba(255,255,255,0.6);font-size:12px;cursor:pointer;display:flex;flex-direction:column;justify-content:center;align-items:center}
-    .nav-item.active{color:#ff2d2d;text-shadow:0 0 10px rgba(255,45,45,0.5)}
-    .nav-icon{font-size:20px;margin-bottom:2px}
-    .sidebar,.online-sidebar{position:fixed;top:0;width:280px;height:100%;background:rgba(0,0,0,0.98);backdrop-filter:blur(25px);z-index:1000;transition:transform 0.3s ease;overflow-y:auto;padding:20px;box-sizing:border-box}
-    .sidebar{left:0;transform:translateX(-100%);border-right:2px solid rgba(255,45,45,0.3)}
-    .sidebar.show{transform:translateX(0)}
-    .online-sidebar{right:0;transform:translateX(100%);border-left:2px solid rgba(0,132,255,0.3)}
-    .online-sidebar.show{transform:translateX(0)}
-    .chatroom{display:flex;align-items:center;gap:12px;padding:12px;margin-bottom:10px;background:rgba(255,255,255,0.05);border-radius:12px;cursor:pointer;transition:0.3s;border:1px solid transparent}
-    .chatroom:hover{background:rgba(255,45,45,0.15);border-color:rgba(255,45,45,0.5)}
-    .chatroom.active{background:rgba(255,45,45,0.2);border-color:rgba(255,45,45,0.7);box-shadow:0 5px 15px rgba(255,45,45,0.2)}
-    .room-avatar{width:50px;height:50px;border-radius:10px;background:linear-gradient(135deg,#ff2d2d,#b30000);display:flex;align-items:center;justify-content:center;font-size:20px}
-    .online-user{display:flex;align-items:center;gap:12px;padding:10px;margin-bottom:8px;background:rgba(255,255,255,0.05);border-radius:10px;border-left:3px solid #25d366}
-    .user-avatar{width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,#0084ff,#0066cc);display:flex;align-items:center;justify-content:center;font-weight:bold}
-    .sticker-menu{position:fixed;bottom:110px;left:10px;right:10px;background:rgba(0,0,0,0.98);border:2px solid rgba(255,45,45,0.5);border-radius:15px;z-index:1000;display:none;flex-direction:column;max-height:350px;box-shadow:0 10px 30px rgba(255,45,45,0.4)}
-    .sticker-header{display:flex;justify-content:space-between;align-items:center;padding:12px 15px;border-bottom:1px solid rgba(255,45,45,0.3);background:rgba(255,45,45,0.15);border-radius:15px 15px 0 0}
-    .sticker-header h3{margin:0;color:#ff2d2d;font-size:16px;text-shadow:0 0 10px rgba(255,45,45,0.5)}
-    .close-sticker-menu{background:none;border:none;color:#ff2d2d;font-size:20px;cursor:pointer;width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;transition:all 0.3s}
-    .close-sticker-menu:hover{background:rgba(255,45,45,0.3);transform:rotate(90deg)}
-    .sticker-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;padding:15px;overflow-y:auto}
-    .sticker-item{background:rgba(255,255,255,0.05);border-radius:12px;padding:10px;cursor:pointer;transition:all 0.3s;border:2px solid transparent;display:flex;align-items:center;justify-content:center}
-    .sticker-item:hover{background:rgba(255,45,45,0.2);border-color:rgba(255,45,45,0.7);transform:scale(1.1);box-shadow:0 5px 15px rgba(255,45,45,0.3)}
-    .sticker-item img{width:60px;height:60px;object-fit:contain;pointer-events:none}
-    .sticker-btn{background:linear-gradient(135deg,#ff2d2d,#b30000);color:#fff;border:none;border-radius:50%;width:40px;height:40px;font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 5px 15px rgba(255,45,45,0.5);transition:all 0.3s}
-    .sticker-btn:hover{transform:scale(1.1);box-shadow:0 8px 20px rgba(255,45,45,0.7)}
-    .modal{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.95);z-index:2000;align-items:center;justify-content:center;backdrop-filter:blur(10px)}
-    .modal-content{background:rgba(20,8,12,0.98);padding:25px;border-radius:15px;width:90%;max-width:350px;border:2px solid rgba(255,45,45,0.5);box-shadow:0 0 40px rgba(255,45,45,0.3);text-align:center}
-    .modal-content input{width:100%;padding:12px 15px;margin:15px 0;border-radius:10px;border:1px solid rgba(255,45,45,0.5);background:rgba(0,0,0,0.5);color:#fff;font-size:14px;box-sizing:border-box}
-    .modal-content button{background:linear-gradient(135deg,#ff2d2d,#b30000);color:#fff;border:none;padding:12px 25px;border-radius:10px;font-size:14px;cursor:pointer;width:100%;margin-top:10px;box-shadow:0 5px 15px rgba(255,45,45,0.3)}
-    .loading{text-align:center;padding:20px;color:rgba(255,255,255,0.6)}
-    .secret-container{position:fixed;top:70px;right:10px;background:rgba(0,0,0,0.98);padding:15px;border-radius:10px;border:2px solid #ff2d2d;display:none;box-shadow:0 0 30px rgba(255,45,45,0.3);max-width:250px;z-index:1000}
-    @media (max-width:768px){.sidebar,.online-sidebar{width:85%}.chat-container{padding:8px}.message{max-width:85%}.sticker-grid{grid-template-columns:repeat(4,1fr);gap:10px;padding:12px}.sticker-item img{width:50px;height:50px}}
-    @media (max-width:480px){.sticker-grid{grid-template-columns:repeat(3,1fr)}}
+    /* WhatsApp UI Base */
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background: #000;
+      color: #fff;
+      width: 100%;
+      height: 100vh;
+      overflow: hidden;
+    }
+    
+    /* ANIME BACKGROUND */
+    .anime-bg {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: -2;
+      background-image: url('background.png');
+      background-size: cover;
+      background-position: center;
+      opacity: 0.5;
+      filter: brightness(0.8) contrast(1.3) saturate(1.5);
+      transition: background-image 1s ease;
+    }
+    
+    /* RED ANIME LIGHTING EFFECT */
+    .red-light {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: radial-gradient(circle at 20% 50%, rgba(255, 45, 45, 0.4) 0%, transparent 50%),
+                  radial-gradient(circle at 80% 20%, rgba(255, 20, 20, 0.3) 0%, transparent 50%);
+      z-index: -1;
+      mix-blend-mode: screen;
+    }
+    
+    /* WhatsApp Header */
+    .chat-header {
+      position: fixed;
+      top: 0;
+      width: 100%;
+      background: rgba(0, 0, 0, 0.9);
+      backdrop-filter: blur(15px);
+      padding: 12px 15px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid rgba(255, 45, 45, 0.3);
+      z-index: 100;
+      height: 60px;
+      box-sizing: border-box;
+    }
+    
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    
+    .logo {
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      overflow: hidden;
+      border: 2px solid #ff2d2d;
+      background: linear-gradient(135deg, #ff2d2d, #b30000);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+      box-shadow: 0 0 20px rgba(255, 45, 45, 0.6);
+    }
+    
+    .header-text h2 {
+      margin: 0;
+      font-size: 18px;
+      color: #ff2d2d;
+      text-shadow: 0 0 10px rgba(255, 45, 45, 0.5);
+    }
+    
+    .header-text small {
+      font-size: 12px;
+      opacity: 0.7;
+    }
+    
+    /* Chat Container */
+    .chat-container {
+      position: fixed;
+      top: 60px;
+      bottom: 110px;
+      width: 100%;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+      padding: 10px;
+      box-sizing: border-box;
+    }
+    
+    .messages {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      min-height: 100%;
+    }
+    
+    /* Message Bubbles */
+    .message {
+      max-width: 80%;
+      padding: 12px 16px;
+      border-radius: 18px;
+      position: relative;
+      word-wrap: break-word;
+      backdrop-filter: blur(5px);
+      animation: fadeIn 0.3s ease;
+    }
+    
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    .sent {
+      align-self: flex-end;
+      background: linear-gradient(135deg, #0084ff, #0066cc);
+      color: white;
+      border-bottom-right-radius: 5px;
+      box-shadow: 0 5px 20px rgba(0, 132, 255, 0.4);
+    }
+    
+    .received {
+      align-self: flex-start;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-bottom-left-radius: 5px;
+    }
+    
+    .sender-name {
+      font-size: 12px;
+      font-weight: bold;
+      margin-bottom: 4px;
+      opacity: 0.9;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .message-time {
+      font-size: 10px;
+      opacity: 0.6;
+      margin-left: 10px;
+    }
+    
+    /* Message Actions */
+    .message-actions {
+      display: none;
+      gap: 10px;
+      margin-top: 8px;
+      padding-top: 8px;
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+      justify-content: flex-end;
+    }
+    
+    .message-action-btn {
+      background: none;
+      border: none;
+      color: rgba(255, 255, 255, 0.5);
+      font-size: 14px;
+      cursor: pointer;
+      padding: 4px 8px;
+      border-radius: 4px;
+      transition: all 0.2s;
+    }
+    
+    .message-action-btn:hover {
+      background: rgba(255, 255, 255, 0.1);
+      color: white;
+    }
+    
+    /* Input Area */
+    .input-area {
+      position: fixed;
+      bottom: 50px;
+      width: 100%;
+      padding: 12px 15px;
+      background: rgba(0, 0, 0, 0.85);
+      backdrop-filter: blur(15px);
+      border-top: 1px solid rgba(255, 45, 45, 0.2);
+      display: flex;
+      gap: 10px;
+      z-index: 100;
+      box-sizing: border-box;
+    }
+    
+    #messageInput {
+      flex: 1;
+      padding: 12px 18px;
+      border-radius: 24px;
+      border: none;
+      background: rgba(255, 255, 255, 0.1);
+      color: white;
+      font-size: 14px;
+      outline: none;
+      border: 1px solid rgba(255, 45, 45, 0.3);
+    }
+    
+    #messageInput::placeholder {
+      color: rgba(255, 255, 255, 0.5);
+    }
+    
+    #sendButton {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      border: none;
+      background: linear-gradient(135deg, #ff2d2d, #b30000);
+      color: white;
+      font-size: 18px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 5px 15px rgba(255, 45, 45, 0.5);
+    }
+    
+    /* Emoji Picker */
+    .emoji-picker {
+      position: fixed;
+      bottom: 110px;
+      right: 15px;
+      background: rgba(0, 0, 0, 0.95);
+      border: 1px solid rgba(255, 45, 45, 0.3);
+      border-radius: 10px;
+      padding: 10px;
+      display: none;
+      grid-template-columns: repeat(6, 1fr);
+      gap: 5px;
+      max-width: 200px;
+      z-index: 1000;
+      box-shadow: 0 5px 20px rgba(0, 0, 0, 0.5);
+    }
+    
+    .emoji-btn {
+      background: none;
+      border: none;
+      color: white;
+      font-size: 20px;
+      cursor: pointer;
+      padding: 5px;
+      border-radius: 5px;
+      transition: background 0.2s;
+    }
+    
+    .emoji-btn:hover {
+      background: rgba(255, 45, 45, 0.2);
+    }
+    
+    /* Bottom Navigation */
+    .nav-bar {
+      position: fixed;
+      bottom: 0;
+      width: 100%;
+      background: rgba(0, 0, 0, 0.95);
+      backdrop-filter: blur(15px);
+      display: flex;
+      height: 50px;
+      border-top: 1px solid rgba(255, 45, 45, 0.2);
+      z-index: 100;
+    }
+    
+    .nav-item {
+      flex: 1;
+      text-align: center;
+      color: rgba(255, 255, 255, 0.6);
+      font-size: 12px;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+    }
+    
+    .nav-item.active {
+      color: #ff2d2d;
+      text-shadow: 0 0 10px rgba(255, 45, 45, 0.5);
+    }
+    
+    .nav-icon {
+      font-size: 20px;
+      margin-bottom: 2px;
+    }
+    
+    /* Sidebars */
+    .sidebar, .online-sidebar {
+      position: fixed;
+      top: 0;
+      width: 280px;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.98);
+      backdrop-filter: blur(25px);
+      z-index: 1000;
+      transition: transform 0.3s ease;
+      overflow-y: auto;
+      padding: 20px;
+      box-sizing: border-box;
+    }
+    
+    .sidebar {
+      left: 0;
+      transform: translateX(-100%);
+      border-right: 2px solid rgba(255, 45, 45, 0.3);
+    }
+    
+    .sidebar.show {
+      transform: translateX(0);
+    }
+    
+    .online-sidebar {
+      right: 0;
+      transform: translateX(100%);
+      border-left: 2px solid rgba(0, 132, 255, 0.3);
+    }
+    
+    .online-sidebar.show {
+      transform: translateX(0);
+    }
+    
+    .chatroom {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px;
+      margin-bottom: 10px;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 12px;
+      cursor: pointer;
+      transition: 0.3s;
+      border: 1px solid transparent;
+    }
+    
+    .chatroom:hover {
+      background: rgba(255, 45, 45, 0.15);
+      border-color: rgba(255, 45, 45, 0.5);
+    }
+    
+    .chatroom.active {
+      background: rgba(255, 45, 45, 0.2);
+      border-color: rgba(255, 45, 45, 0.7);
+      box-shadow: 0 5px 15px rgba(255, 45, 45, 0.2);
+    }
+    
+    .room-avatar {
+      width: 50px;
+      height: 50px;
+      border-radius: 10px;
+      background: linear-gradient(135deg, #ff2d2d, #b30000);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+    }
+    
+    /* Online Users */
+    .online-user {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px;
+      margin-bottom: 8px;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 10px;
+      border-left: 3px solid #25d366;
+    }
+    
+    .user-avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #0084ff, #0066cc);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+    }
+    
+    /* STICKER MENU (NEW) */
+    .sticker-menu {
+      position: fixed;
+      bottom: 110px;
+      left: 10px;
+      right: 10px;
+      background: rgba(0, 0, 0, 0.98);
+      border: 2px solid rgba(255, 45, 45, 0.5);
+      border-radius: 15px;
+      z-index: 1000;
+      display: none;
+      flex-direction: column;
+      max-height: 350px;
+      box-shadow: 0 10px 30px rgba(255, 45, 45, 0.4);
+    }
+    
+    .sticker-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 15px;
+      border-bottom: 1px solid rgba(255, 45, 45, 0.3);
+      background: rgba(255, 45, 45, 0.15);
+      border-radius: 15px 15px 0 0;
+    }
+    
+    .sticker-header h3 {
+      margin: 0;
+      color: #ff2d2d;
+      font-size: 16px;
+      text-shadow: 0 0 10px rgba(255, 45, 45, 0.5);
+    }
+    
+    .close-sticker-menu {
+      background: none;
+      border: none;
+      color: #ff2d2d;
+      font-size: 20px;
+      cursor: pointer;
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.3s;
+    }
+    
+    .close-sticker-menu:hover {
+      background: rgba(255, 45, 45, 0.3);
+      transform: rotate(90deg);
+    }
+    
+    .sticker-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 12px;
+      padding: 15px;
+      overflow-y: auto;
+    }
+    
+    .sticker-item {
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 12px;
+      padding: 10px;
+      cursor: pointer;
+      transition: all 0.3s;
+      border: 2px solid transparent;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .sticker-item:hover {
+      background: rgba(255, 45, 45, 0.2);
+      border-color: rgba(255, 45, 45, 0.7);
+      transform: scale(1.1);
+      box-shadow: 0 5px 15px rgba(255, 45, 45, 0.3);
+    }
+    
+    .sticker-item img {
+      width: 60px;
+      height: 60px;
+      object-fit: contain;
+      pointer-events: none;
+    }
+    
+    .sticker-btn {
+      background: linear-gradient(135deg, #ff2d2d, #b30000);
+      color: white;
+      border: none;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      font-size: 20px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 5px 15px rgba(255, 45, 45, 0.5);
+      transition: all 0.3s;
+    }
+    
+    .sticker-btn:hover {
+      transform: scale(1.1);
+      box-shadow: 0 8px 20px rgba(255, 45, 45, 0.7);
+    }
+    
+    /* Modals */
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.95);
+      z-index: 2000;
+      align-items: center;
+      justify-content: center;
+      backdrop-filter: blur(10px);
+    }
+    
+    .modal-content {
+      background: rgba(20, 8, 12, 0.98);
+      padding: 25px;
+      border-radius: 15px;
+      width: 90%;
+      max-width: 350px;
+      border: 2px solid rgba(255, 45, 45, 0.5);
+      box-shadow: 0 0 40px rgba(255, 45, 45, 0.3);
+      text-align: center;
+    }
+    
+    .modal-content input {
+      width: 100%;
+      padding: 12px 15px;
+      margin: 15px 0;
+      border-radius: 10px;
+      border: 1px solid rgba(255, 45, 45, 0.5);
+      background: rgba(0, 0, 0, 0.5);
+      color: white;
+      font-size: 14px;
+      box-sizing: border-box;
+    }
+    
+    .modal-content button {
+      background: linear-gradient(135deg, #ff2d2d, #b30000);
+      color: white;
+      border: none;
+      padding: 12px 25px;
+      border-radius: 10px;
+      font-size: 14px;
+      cursor: pointer;
+      width: 100%;
+      margin-top: 10px;
+      box-shadow: 0 5px 15px rgba(255, 45, 45, 0.3);
+    }
+    
+    /* Loading */
+    .loading {
+      text-align: center;
+      padding: 20px;
+      color: rgba(255, 255, 255, 0.6);
+    }
+    
+    /* Secret Panel */
+    .secret-container {
+      position: fixed;
+      top: 70px;
+      right: 10px;
+      background: rgba(0, 0, 0, 0.98);
+      padding: 15px;
+      border-radius: 10px;
+      border: 2px solid #ff2d2d;
+      display: none;
+      box-shadow: 0 0 30px rgba(255, 45, 45, 0.3);
+      max-width: 250px;
+      z-index: 1000;
+    }
+    
+    /* Mobile Responsive */
+    @media (max-width: 768px) {
+      .sidebar, .online-sidebar {
+        width: 85%;
+      }
+      
+      .chat-container {
+        padding: 8px;
+      }
+      
+      .message {
+        max-width: 85%;
+      }
+      
+      .sticker-grid {
+        grid-template-columns: repeat(4, 1fr);
+        gap: 10px;
+        padding: 12px;
+      }
+      
+      .sticker-item img {
+        width: 50px;
+        height: 50px;
+      }
+    }
+    
+    @media (max-width: 480px) {
+      .sticker-grid {
+        grid-template-columns: repeat(3, 1fr);
+      }
+    }
   </style>
 </head>
 <body>
+  <!-- Anime Background -->
   <div class="anime-bg" id="animeBg"></div>
   <div class="red-light"></div>
   
+  <!-- Sticker Menu (NEW) -->
   <div class="sticker-menu" id="stickerMenu">
     <div class="sticker-header">
       <h3>🎌 Anime Stickers Pack</h3>
       <button class="close-sticker-menu" id="closeStickerMenu">✕</button>
     </div>
-    <div class="sticker-grid" id="stickerGrid"></div>
-  </div>
-  
-  <div class="secret-container" id="secretContainer">
-    <h4 style="margin:0 0 10px;color:#ff2d2d;text-align:center">🔒 Secret Passwords</h4>
-    <div style="font-size:12px;line-height:1.6">
-      <div><strong>Room 1:</strong> <span id="secretPass1" style="color:#25d366">Loading...</span></div>
-      <div><strong>Room 2:</strong> <span id="secretPass2" style="color:#25d366">Loading...</span></div>
-      <div><strong>Room 3:</strong> <span id="secretPass3" style="color:#25d366">Loading...</span></div>
-      <div><strong>Room 4:</strong> <span id="secretPass4" style="color:#25d366">Loading...</span></div>
-      <div><strong>Room 5:</strong> <span id="secretPass5" style="color:#25d366">Loading...</span></div>
+    <div class="sticker-grid" id="stickerGrid">
+      <!-- Stickers will be loaded here -->
     </div>
-    <button onclick="hideSecretPanel()" style="margin-top:10px;background:#ff2d2d;color:#fff;border:none;padding:5px 10px;border-radius:5px;font-size:10px;cursor:pointer;width:100%">Close</button>
   </div>
   
+  <!-- Secret Admin Panel -->
+  <div class="secret-container" id="secretContainer">
+    <h4 style="margin:0 0 10px 0;color:#ff2d2d;text-align:center;">🔒 Secret Passwords</h4>
+    <div style="font-size:12px;line-height:1.6;">
+      <div><strong>Room 1:</strong> <span id="secretPass1" style="color:#25d366;">Loading...</span></div>
+      <div><strong>Room 2:</strong> <span id="secretPass2" style="color:#25d366;">Loading...</span></div>
+      <div><strong>Room 3:</strong> <span id="secretPass3" style="color:#25d366;">Loading...</span></div>
+      <div><strong>Room 4:</strong> <span id="secretPass4" style="color:#25d366;">Loading...</span></div>
+      <div><strong>Room 5:</strong> <span id="secretPass5" style="color:#25d366;">Loading...</span></div>
+    </div>
+    <button onclick="hideSecretPanel()" style="margin-top:10px;background:#ff2d2d;color:white;border:none;padding:5px 10px;border-radius:5px;font-size:10px;cursor:pointer;width:100%;">Close</button>
+  </div>
+  
+  <!-- Header -->
   <div class="chat-header">
     <div class="header-left">
-      <button id="menuBtn" style="background:none;border:none;color:#ff2d2d;font-size:22px;cursor:pointer">☰</button>
+      <button id="menuBtn" style="background:none;border:none;color:#ff2d2d;font-size:22px;cursor:pointer;">☰</button>
       <div class="logo">🎌</div>
       <div class="header-text">
         <h2>AnimeChat Pro</h2>
         <small id="onlineCount">0 online</small>
       </div>
     </div>
-    <div id="roomNameDisplay" style="color:#ff2d2d;font-weight:bold;font-size:14px;max-width:100px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">General Chat</div>
-    <div style="display:flex;align-items:center;gap:10px">
-      <button id="onlineBtn" style="background:none;border:none;color:#25d366;font-size:18px;cursor:pointer">👥</button>
-      <button id="secretBtn" style="background:none;border:none;color:#ff2d2d;font-size:18px;cursor:pointer">👁️</button>
+    <div id="roomNameDisplay" style="color:#ff2d2d;font-weight:bold;font-size:14px;max-width:100px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">General Chat</div>
+    <div style="display:flex;align-items:center;gap:10px;">
+      <button id="onlineBtn" style="background:none;border:none;color:#25d366;font-size:18px;cursor:pointer;">👥</button>
+      <button id="secretBtn" style="background:none;border:none;color:#ff2d2d;font-size:18px;cursor:pointer;">👁️</button>
     </div>
   </div>
   
+  <!-- Chat Container -->
   <div class="chat-container" id="chatContainer">
-    <div class="messages" id="messages"><div class="loading" id="loading">Loading messages...</div></div>
+    <div class="messages" id="messages">
+      <div class="loading" id="loading">Loading messages...</div>
+    </div>
   </div>
   
+  <!-- Input Area -->
   <div class="input-area">
     <button class="sticker-btn" id="stickerBtn">🎌</button>
+    <button id="emojiBtn" style="background:none;border:none;color:#ff2d2d;font-size:20px;cursor:pointer;">😀</button>
     <input type="text" id="messageInput" placeholder="Type a message..." autocomplete="off">
     <button id="sendButton">➤</button>
   </div>
   
-  <div class="nav-bar">
-    <div class="nav-item active" data-tab="chat"><div class="nav-icon">💬</div><div>Chat</div></div>
-    <div class="nav-item" data-tab="rooms"><div class="nav-icon">🔒</div><div>Rooms</div></div>
-    <div class="nav-item" data-tab="theme"><div class="nav-icon">🎨</div><div>Theme</div></div>
-    <div class="nav-item" data-tab="online"><div class="nav-icon">👥</div><div><span id="onlineBadge">0</span> Online</div></div>
+  <!-- Emoji Picker -->
+  <div class="emoji-picker" id="emojiPicker">
+    <button class="emoji-btn" data-emoji="😀">😀</button>
+    <button class="emoji-btn" data-emoji="😂">😂</button>
+    <button class="emoji-btn" data-emoji="😍">😍</button>
+    <button class="emoji-btn" data-emoji="🥰">🥰</button>
+    <button class="emoji-btn" data-emoji="😎">😎</button>
+    <button class="emoji-btn" data-emoji="🤩">🤩</button>
+    <button class="emoji-btn" data-emoji="😊">😊</button>
+    <button class="emoji-btn" data-emoji="🙏">🙏</button>
+    <button class="emoji-btn" data-emoji="🎉">🎉</button>
+    <button class="emoji-btn" data-emoji="🎌">🎌</button>
+    <button class="emoji-btn" data-emoji="🔥">🔥</button>
+    <button class="emoji-btn" data-emoji="💀">💀</button>
   </div>
   
+  <!-- Navigation -->
+  <div class="nav-bar">
+    <div class="nav-item active" data-tab="chat">
+      <div class="nav-icon">💬</div>
+      <div>Chat</div>
+    </div>
+    <div class="nav-item" data-tab="rooms">
+      <div class="nav-icon">🔒</div>
+      <div>Rooms</div>
+    </div>
+    <div class="nav-item" data-tab="theme">
+      <div class="nav-icon">🎨</div>
+      <div>Theme</div>
+    </div>
+    <div class="nav-item" data-tab="online">
+      <div class="nav-icon">👥</div>
+      <div><span id="onlineBadge">0</span> Online</div>
+    </div>
+  </div>
+  
+  <!-- Sidebars -->
   <div class="sidebar" id="sidebar">
-    <h3 style="margin-top:0;color:#ff2d2d;text-align:center">🔒 Secret Rooms</h3>
-    <div class="chatroom active" data-room="general" data-bg="background.png"><div class="room-avatar">#0</div><div class="room-info"><h4>General Chat <span style="color:#25d366">🔓</span></h4><small>Public • Everyone welcome</small></div></div>
-    <div class="chatroom" data-room="Chatroom1" data-password="ZAFAR1" data-bg="bg1.png"><div class="room-avatar">#1</div><div class="room-info"><h4>Secret Room 1 <span style="color:#ff2d2d">🔒</span></h4><small style="color:#ff2d2d;background:rgba(255,45,45,0.1);padding:2px 8px;border-radius:10px;border:1px dashed rgba(255,45,45,0.3)">Password Protected</small></div></div>
-    <div class="chatroom" data-room="Chatroom2" data-password="ZAFAR2" data-bg="bg2.png"><div class="room-avatar">#2</div><div class="room-info"><h4>Secret Room 2 <span style="color:#ff2d2d">🔒</span></h4><small style="color:#ff2d2d;background:rgba(255,45,45,0.1);padding:2px 8px;border-radius:10px;border:1px dashed rgba(255,45,45,0.3)">Password Protected</small></div></div>
-    <div class="chatroom" data-room="Chatroom3" data-password="ZAFAR3" data-bg="bg3.png"><div class="room-avatar">#3</div><div class="room-info"><h4>Secret Room 3 <span style="color:#ff2d2d">🔒</span></h4><small style="color:#ff2d2d;background:rgba(255,45,45,0.1);padding:2px 8px;border-radius:10px;border:1px dashed rgba(255,45,45,0.3)">Password Protected</small></div></div>
-    <div class="chatroom" data-room="Chatroom4" data-password="ZAFAR4" data-bg="bg4.png"><div class="room-avatar">#4</div><div class="room-info"><h4>Secret Room 4 <span style="color:#ff2d2d">🔒</span></h4><small style="color:#ff2d2d;background:rgba(255,45,45,0.1);padding:2px 8px;border-radius:10px;border:1px dashed rgba(255,45,45,0.3)">Password Protected</small></div></div>
-    <div class="chatroom" data-room="Chatroom5" data-password="ZAFAR5" data-bg="bg5.png"><div class="room-avatar">#5</div><div class="room-info"><h4>Secret Room 5 <span style="color:#ff2d2d">🔒</span></h4><small style="color:#ff2d2d;background:rgba(255,45,45,0.1);padding:2px 8px;border-radius:10px;border:1px dashed rgba(255,45,45,0.3)">Password Protected</small></div></div>
+    <h3 style="margin-top:0;color:#ff2d2d;text-align:center;">🔒 Secret Rooms</h3>
+    
+    <div class="chatroom active" data-room="general" data-bg="background.png">
+      <div class="room-avatar">#0</div>
+      <div class="room-info">
+        <h4>General Chat <span style="color:#25d366;">🔓</span></h4>
+        <small>Public • Everyone welcome</small>
+      </div>
+    </div>
+    
+    <div class="chatroom" data-room="Chatroom1" data-password="ZAFAR1" data-bg="bg1.png">
+      <div class="room-avatar">#1</div>
+      <div class="room-info">
+        <h4>Secret Room 1 <span style="color:#ff2d2d;">🔒</span></h4>
+        <small style="color:#ff2d2d;background:rgba(255,45,45,0.1);padding:2px 8px;border-radius:10px;border:1px dashed rgba(255,45,45,0.3);">Password Protected</small>
+      </div>
+    </div>
+    
+    <div class="chatroom" data-room="Chatroom2" data-password="ZAFAR2" data-bg="bg2.png">
+      <div class="room-avatar">#2</div>
+      <div class="room-info">
+        <h4>Secret Room 2 <span style="color:#ff2d2d;">🔒</span></h4>
+        <small style="color:#ff2d2d;background:rgba(255,45,45,0.1);padding:2px 8px;border-radius:10px;border:1px dashed rgba(255,45,45,0.3);">Password Protected</small>
+      </div>
+    </div>
+    
+    <div class="chatroom" data-room="Chatroom3" data-password="ZAFAR3" data-bg="bg3.png">
+      <div class="room-avatar">#3</div>
+      <div class="room-info">
+        <h4>Secret Room 3 <span style="color:#ff2d2d;">🔒</span></h4>
+        <small style="color:#ff2d2d;background:rgba(255,45,45,0.1);padding:2px 8px;border-radius:10px;border:1px dashed rgba(255,45,45,0.3);">Password Protected</small>
+      </div>
+    </div>
+    
+    <div class="chatroom" data-room="Chatroom4" data-password="ZAFAR4" data-bg="bg4.png">
+      <div class="room-avatar">#4</div>
+      <div class="room-info">
+        <h4>Secret Room 4 <span style="color:#ff2d2d;">🔒</span></h4>
+        <small style="color:#ff2d2d;background:rgba(255,45,45,0.1);padding:2px 8px;border-radius:10px;border:1px dashed rgba(255,45,45,0.3);">Password Protected</small>
+      </div>
+    </div>
+    
+    <div class="chatroom" data-room="Chatroom5" data-password="ZAFAR5" data-bg="bg5.png">
+      <div class="room-avatar">#5</div>
+      <div class="room-info">
+        <h4>Secret Room 5 <span style="color:#ff2d2d;">🔒</span></h4>
+        <small style="color:#ff2d2d;background:rgba(255,45,45,0.1);padding:2px 8px;border-radius:10px;border:1px dashed rgba(255,45,45,0.3);">Password Protected</small>
+      </div>
+    </div>
   </div>
   
   <div class="online-sidebar" id="onlineSidebar">
-    <h3 style="margin-top:0;color:#25d366;text-align:center">👥 Online Users</h3>
-    <div id="onlineUsersList"><div class="loading">Loading users...</div></div>
+    <h3 style="margin-top:0;color:#25d366;text-align:center;">👥 Online Users</h3>
+    <div id="onlineUsersList">
+      <div class="loading">Loading users...</div>
+    </div>
   </div>
   
+  <!-- Modals -->
   <div class="modal" id="nameModal">
     <div class="modal-content">
       <h2>🎌 Welcome to AnimeChat</h2>
       <p>Enter your name to start chatting:</p>
       <input type="text" id="nameInput" placeholder="Enter your name..." autocomplete="off">
       <button id="submitName">Start Chatting</button>
-      <p style="font-size:12px;margin-top:15px;opacity:0.7">🔥 Real-time Chat<br>🔒 5 password protected rooms<br>🎌 10 FREE Anime Stickers<br>👥 Live Online Users</p>
+      <p style="font-size:12px;margin-top:15px;opacity:0.7;">
+        🔥 Real-time Chat<br>
+        🔒 5 password protected rooms<br>
+        🎌 10 FREE Anime Stickers<br>
+        👥 Live Online Users
+      </p>
     </div>
   </div>
   
@@ -152,12 +787,14 @@
       <p id="roomPrompt">Enter password for this room:</p>
       <input type="password" id="passwordInput" placeholder="Enter password..." autocomplete="off">
       <button id="submitPassword">Join Room</button>
-      <button id="cancelPassword" style="background:rgba(255,255,255,0.1);margin-top:5px">Cancel</button>
+      <button id="cancelPassword" style="background:rgba(255,255,255,0.1);margin-top:5px;">Cancel</button>
     </div>
   </div>
+</body>
+</html>
 
 <script>
-// ========== CONFIG ==========
+// ========== APP CONFIGURATION ==========
 const CONFIG = {
   SECRET_PASSWORDS: {
     "Chatroom1": "ZAFAR1",
@@ -192,9 +829,9 @@ const CONFIG = {
   }
 };
 
-// ========== STATE ==========
+// ========== APP STATE ==========
 let currentUser = {
-  name: '',
+  name: localStorage.getItem('animechat_username') || '',
   id: '',
   room: 'general'
 };
@@ -202,105 +839,97 @@ let currentUser = {
 let app = {
   firebase: null,
   database: null,
-  auth: null
+  auth: null,
+  onlineUsers: {},
+  typingUsers: {}
 };
 
-// ========== ELEMENTS ==========
+// ========== DOM ELEMENTS ==========
 const elements = {
+  // Main elements
   chatContainer: document.getElementById('chatContainer'),
   messages: document.getElementById('messages'),
   messageInput: document.getElementById('messageInput'),
   sendButton: document.getElementById('sendButton'),
+  
+  // Sticker elements (NEW)
   stickerBtn: document.getElementById('stickerBtn'),
   stickerMenu: document.getElementById('stickerMenu'),
   closeStickerMenu: document.getElementById('closeStickerMenu'),
   stickerGrid: document.getElementById('stickerGrid'),
+  
+  // UI elements
   nameModal: document.getElementById('nameModal'),
   passwordModal: document.getElementById('passwordModal'),
   nameInput: document.getElementById('nameInput'),
   passwordInput: document.getElementById('passwordInput'),
   roomPrompt: document.getElementById('roomPrompt'),
+  
+  // Sidebars
   sidebar: document.getElementById('sidebar'),
   onlineSidebar: document.getElementById('onlineSidebar'),
+  
+  // Buttons
   menuBtn: document.getElementById('menuBtn'),
   onlineBtn: document.getElementById('onlineBtn'),
   secretBtn: document.getElementById('secretBtn'),
+  emojiBtn: document.getElementById('emojiBtn'),
+  emojiPicker: document.getElementById('emojiPicker'),
+  
+  // Info displays
   roomNameDisplay: document.getElementById('roomNameDisplay'),
   onlineCount: document.getElementById('onlineCount'),
   onlineBadge: document.getElementById('onlineBadge'),
   onlineUsersList: document.getElementById('onlineUsersList'),
   secretContainer: document.getElementById('secretContainer'),
+  
+  // Chatrooms
   chatrooms: document.querySelectorAll('.chatroom'),
+  
+  // Navigation
   navItems: document.querySelectorAll('.nav-item'),
+  
+  // Loading
   loading: document.getElementById('loading')
 };
 
-// ========== FIREBASE ==========
-function initializeFirebase() {
-  return new Promise((resolve) => {
-    if (typeof firebase === 'undefined') {
-      const script = document.createElement('script');
-      script.src = 'https://www.gstatic.com/firebasejs/8.6.8/firebase-app.js';
-      script.onload = () => {
-        const authScript = document.createElement('script');
-        authScript.src = 'https://www.gstatic.com/firebasejs/8.6.8/firebase-auth.js';
-        authScript.onload = () => {
-          const dbScript = document.createElement('script');
-          dbScript.src = 'https://www.gstatic.com/firebasejs/8.6.8/firebase-database.js';
-          dbScript.onload = () => {
-            try {
-              app.firebase = firebase.initializeApp(CONFIG.FIREBASE_CONFIG);
-              app.database = firebase.database();
-              app.auth = firebase.auth();
-              console.log('✅ Firebase loaded');
-              resolve(true);
-            } catch (e) {
-              console.warn('Firebase error');
-              resolve(false);
-            }
-          };
-          dbScript.onerror = () => resolve(false);
-          document.head.appendChild(dbScript);
-        };
-        authScript.onerror = () => resolve(false);
-        document.head.appendChild(authScript);
-      };
-      script.onerror = () => resolve(false);
-      document.head.appendChild(script);
-    } else {
-      try {
-        app.firebase = firebase.initializeApp(CONFIG.FIREBASE_CONFIG);
-        app.database = firebase.database();
-        app.auth = firebase.auth();
-        console.log('✅ Firebase loaded');
-        resolve(true);
-      } catch (e) {
-        resolve(false);
-      }
-    }
-  });
-}
-
-// ========== STICKER SYSTEM ==========
+// ========== STICKER SYSTEM (NEW) ==========
 function initStickerSystem() {
-  elements.stickerBtn.addEventListener('click', () => {
-    elements.stickerMenu.style.display = elements.stickerMenu.style.display === 'flex' ? 'none' : 'flex';
-  });
+  console.log('🎌 Sticker System Initializing...');
   
-  elements.closeStickerMenu.addEventListener('click', () => {
-    elements.stickerMenu.style.display = 'none';
-  });
+  // Sticker menu toggle
+  elements.stickerBtn.addEventListener('click', toggleStickerMenu);
+  elements.closeStickerMenu.addEventListener('click', toggleStickerMenu);
   
+  // Load stickers
+  loadStickers();
+  
+  // Close sticker menu when clicking outside
   document.addEventListener('click', (e) => {
-    if (!elements.stickerMenu.contains(e.target) && e.target !== elements.stickerBtn) {
+    if (!elements.stickerMenu.contains(e.target) && 
+        e.target !== elements.stickerBtn) {
       elements.stickerMenu.style.display = 'none';
     }
   });
   
-  loadStickers();
+  console.log('✅ Sticker System Ready');
+}
+
+function toggleStickerMenu() {
+  const isVisible = elements.stickerMenu.style.display === 'flex';
+  elements.stickerMenu.style.display = isVisible ? 'none' : 'flex';
+  
+  // Close emoji picker if open
+  elements.emojiPicker.style.display = 'none';
+  
+  if (!isVisible) {
+    // Scroll to top of sticker grid
+    elements.stickerGrid.scrollTop = 0;
+  }
 }
 
 function loadStickers() {
+  console.log('📦 Loading stickers...');
   elements.stickerGrid.innerHTML = '';
   
   CONFIG.STICKERS.forEach(sticker => {
@@ -310,11 +939,10 @@ function loadStickers() {
     
     stickerDiv.innerHTML = `
       <img src="${sticker.file}" alt="${sticker.name}" 
-           onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=\"http://www.w3.org/2000/svg\"><rect width=\"100\" height=\"100\" fill=\"%23ff2d2d\"/><text x=\"50\" y=\"60\" font-size=\"40\" fill=\"white\" text-anchor=\"middle\">${sticker.id}</text></svg>'">
+           onerror="this.onerror=null; this.src='data:image/svg+xml;utf8,<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 100 100\"><rect width=\"100\" height=\"100\" fill=\"%23ff2d2d\"/><text x=\"50\" y=\"60\" font-family=\"Arial\" font-size=\"40\" fill=\"white\" text-anchor=\"middle\">${sticker.id}</text></svg>'">
     `;
     
     stickerDiv.addEventListener('click', () => {
-      console.log(`🎌 Selected sticker: ${sticker.name}`);
       sendSticker(sticker.file, sticker.name);
     });
     
@@ -325,9 +953,8 @@ function loadStickers() {
 }
 
 function sendSticker(stickerFile, stickerName) {
-  if (!currentUser.name) {
-    alert('Please enter your name first!');
-    elements.nameModal.style.display = 'flex';
+  if (!currentUser.name || !currentUser.id || !app.database) {
+    alert('Please wait, connecting to chat...');
     return;
   }
   
@@ -338,190 +965,120 @@ function sendSticker(stickerFile, stickerName) {
   
   console.log(`🎌 Sending sticker: ${stickerName}`);
   
-  const messageData = {
+  const messagesRef = app.database.ref('rooms/' + currentUser.room + '/messages');
+  
+  messagesRef.push({
     type: 'sticker',
     stickerFile: stickerFile,
     stickerName: stickerName,
     senderId: currentUser.id,
     senderName: currentUser.name,
     timestamp: Date.now()
-  };
-  
-  if (app.database && app.database.ref) {
-    app.database.ref('rooms/' + currentUser.room + '/messages').push(messageData)
-      .then(() => {
-        console.log('✅ Sticker sent to Firebase');
-        elements.stickerMenu.style.display = 'none';
-      })
-      .catch(error => {
-        console.warn('Failed to send sticker:', error);
-        addMessageToUI(messageData);
-        elements.stickerMenu.style.display = 'none';
-      });
-  } else {
-    addMessageToUI(messageData);
+  }).then(() => {
+    console.log('✅ Sticker sent successfully');
     elements.stickerMenu.style.display = 'none';
-  }
+  }).catch(error => {
+    console.error('❌ Sticker send error:', error);
+    alert('Failed to send sticker. Please try again.');
+  });
 }
 
-// ========== MESSAGE SYSTEM ==========
-function initMessageSystem() {
-  elements.sendButton.addEventListener('click', sendMessage);
+// ========== EMOJI SYSTEM ==========
+function initEmojiSystem() {
+  // Emoji button click
+  elements.emojiBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    const isVisible = elements.emojiPicker.style.display === 'grid';
+    elements.emojiPicker.style.display = isVisible ? 'none' : 'grid';
+    
+    // Close sticker menu if open
+    if (!isVisible) {
+      elements.stickerMenu.style.display = 'none';
+    }
+  });
   
-  elements.messageInput.addEventListener('keypress', (e) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      sendMessage();
+  // Emoji selection
+  elements.emojiPicker.querySelectorAll('.emoji-btn').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      const emoji = btn.getAttribute('data-emoji');
+      elements.messageInput.value += emoji;
+      elements.messageInput.focus();
+      elements.emojiPicker.style.display = 'none';
+    });
+  });
+  
+  // Close emoji picker when clicking outside
+  document.addEventListener('click', (e) => {
+    if (!elements.emojiPicker.contains(e.target) && e.target !== elements.emojiBtn) {
+      elements.emojiPicker.style.display = 'none';
     }
   });
 }
 
-function sendMessage() {
-  const text = elements.messageInput.value.trim();
-  if (!text) return;
+// ========== SIDEBAR SYSTEM ==========
+function initSidebarSystem() {
+  let activeSidebar = null;
   
-  if (!currentUser.name) {
-    alert('Please enter your name first!');
-    elements.nameModal.style.display = 'flex';
-    return;
-  }
-  
-  console.log(`💬 Sending: ${text}`);
-  
-  const messageData = {
-    text: text,
-    senderId: currentUser.id,
-    senderName: currentUser.name,
-    timestamp: Date.now(),
-    type: 'text'
-  };
-  
-  if (app.database && app.database.ref) {
-    app.database.ref('rooms/' + currentUser.room + '/messages').push(messageData)
-      .then(() => {
-        elements.messageInput.value = '';
-        elements.messageInput.focus();
-      })
-      .catch(error => {
-        console.warn('Failed to send:', error);
-        addMessageToUI(messageData);
-        elements.messageInput.value = '';
-        elements.messageInput.focus();
-      });
-  } else {
-    addMessageToUI(messageData);
-    elements.messageInput.value = '';
-    elements.messageInput.focus();
-  }
-}
-
-// ========== ROOM SYSTEM ==========
-let messageListener = null;
-
-function loadMessages() {
-  elements.loading.style.display = 'block';
-  elements.messages.innerHTML = '';
-  
-  if (messageListener && app.database) {
-    app.database.ref('rooms/' + currentUser.room + '/messages').off('value', messageListener);
-  }
-  
-  if (app.database && app.database.ref) {
-    const messagesRef = app.database.ref('rooms/' + currentUser.room + '/messages');
-    
-    messageListener = messagesRef.orderByChild('timestamp').limitToLast(50).on('value', (snapshot) => {
-      elements.loading.style.display = 'none';
-      elements.messages.innerHTML = '';
-      
-      if (snapshot.exists()) {
-        const messages = [];
-        snapshot.forEach(child => {
-          messages.push({
-            id: child.key,
-            ...child.val()
-          });
-        });
-        
-        messages.sort((a, b) => a.timestamp - b.timestamp);
-        messages.forEach(msg => addMessageToUI(msg));
-        
-        setTimeout(() => {
-          elements.chatContainer.scrollTop = elements.chatContainer.scrollHeight;
-        }, 100);
-      } else {
-        showSystemMessage(`Welcome to ${currentUser.room}! Be the first to send a message.`);
+  // Toggle sidebar function
+  function toggleSidebar(sidebar) {
+    if (activeSidebar === sidebar) {
+      sidebar.classList.remove('show');
+      activeSidebar = null;
+    } else {
+      if (activeSidebar) {
+        activeSidebar.classList.remove('show');
       }
-    }, (error) => {
-      console.warn('Load error:', error);
-      showDemoMessages();
-    });
-  } else {
-    showDemoMessages();
+      sidebar.classList.add('show');
+      activeSidebar = sidebar;
+    }
+    
+    // Close sticker menu if open
+    elements.stickerMenu.style.display = 'none';
+    elements.emojiPicker.style.display = 'none';
   }
-}
-
-function showDemoMessages() {
-  elements.loading.style.display = 'none';
-  elements.messages.innerHTML = '';
   
-  const demoMessages = [
-    { senderName: "System", text: "Welcome to AnimeChat Pro!", timestamp: Date.now() - 60000 },
-    { senderName: "Bot", text: "Connect to internet for real-time chat with other users!", timestamp: Date.now() - 30000 },
-    { senderName: "Admin", text: "Send messages, stickers & enjoy!", timestamp: Date.now() }
-  ];
+  // Button events
+  elements.menuBtn.addEventListener('click', () => toggleSidebar(elements.sidebar));
+  elements.onlineBtn.addEventListener('click', () => toggleSidebar(elements.onlineSidebar));
   
-  demoMessages.forEach(msg => {
-    addMessageToUI(msg);
+  // Close sidebar when clicking outside
+  document.addEventListener('click', (e) => {
+    if (activeSidebar && 
+        !activeSidebar.contains(e.target) && 
+        e.target !== elements.menuBtn && 
+        e.target !== elements.onlineBtn) {
+      activeSidebar.classList.remove('show');
+      activeSidebar = null;
+    }
   });
 }
 
-function addMessageToUI(message) {
-  const isSentByMe = message.senderId === currentUser.id;
-  const messageDiv = document.createElement('div');
-  messageDiv.className = `message ${isSentByMe ? 'sent' : 'received'}`;
-  
-  const time = new Date(message.timestamp).toLocaleTimeString([], { 
-    hour: '2-digit', minute: '2-digit' 
+// ========== SECRET PANEL ==========
+function initSecretPanel() {
+  elements.secretBtn.addEventListener('click', () => {
+    const isVisible = elements.secretContainer.style.display === 'block';
+    elements.secretContainer.style.display = isVisible ? 'none' : 'block';
+    
+    if (!isVisible) {
+      // Show passwords
+      document.getElementById('secretPass1').textContent = CONFIG.SECRET_PASSWORDS.Chatroom1;
+      document.getElementById('secretPass2').textContent = CONFIG.SECRET_PASSWORDS.Chatroom2;
+      document.getElementById('secretPass3').textContent = CONFIG.SECRET_PASSWORDS.Chatroom3;
+      document.getElementById('secretPass4').textContent = CONFIG.SECRET_PASSWORDS.Chatroom4;
+      document.getElementById('secretPass5').textContent = CONFIG.SECRET_PASSWORDS.Chatroom5;
+    }
   });
   
-  let content = '';
-  if (message.type === 'sticker') {
-    content = `
-      <div style="text-align:center;padding:5px;">
-        <img src="${message.stickerFile}" alt="${message.stickerName}" 
-             style="max-width:120px;max-height:120px;border-radius:10px;border:2px solid rgba(255,255,255,0.1);"
-             onerror="this.style.display='none'; this.parentElement.innerHTML='<div style=\"color:#ff2d2d;padding:10px;\">🎌 ${message.stickerName}</div>';">
-        <div style="font-size:11px;opacity:0.7;margin-top:5px;background:rgba(255,255,255,0.05);padding:3px 8px;border-radius:10px;">${message.stickerName}</div>
-      </div>
-    `;
-  } else {
-    content = message.text || '';
-  }
-  
-  messageDiv.innerHTML = `
-    <div class="sender-name">
-      <span>${message.senderName || 'Unknown'} ${isSentByMe ? '(You)' : ''}</span>
-      <span class="message-time">${time}</span>
-    </div>
-    ${content}
-  `;
-  
-  elements.messages.appendChild(messageDiv);
+  // Close when clicking outside
+  document.addEventListener('click', (e) => {
+    if (!elements.secretContainer.contains(e.target) && e.target !== elements.secretBtn) {
+      elements.secretContainer.style.display = 'none';
+    }
+  });
 }
 
-function showSystemMessage(text) {
-  const messageDiv = document.createElement('div');
-  messageDiv.className = 'message received';
-  messageDiv.style.background = 'rgba(255, 45, 45, 0.1)';
-  messageDiv.style.border = '1px dashed rgba(255, 45, 45, 0.3)';
-  messageDiv.innerHTML = `
-    <div class="sender-name">
-      <span style="color:#ff2d2d;">⚙️ System</span>
-      <span class="message-time">${new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
-    </div>
-    ${text}
-  `;
-  elements.messages.appendChild(messageDiv);
+function hideSecretPanel() {
+  elements.secretContainer.style.display = 'none';
 }
 
 // ========== ROOM MANAGEMENT ==========
@@ -552,6 +1109,7 @@ function showPasswordModal(roomName, requiredPassword, bgFile) {
   elements.passwordInput.focus();
   elements.passwordInput.value = '';
   
+  // Store room data in modal
   elements.passwordModal.dataset.room = roomName;
   elements.passwordModal.dataset.password = requiredPassword;
   elements.passwordModal.dataset.bg = bgFile;
@@ -560,11 +1118,14 @@ function showPasswordModal(roomName, requiredPassword, bgFile) {
 function switchRoom(roomName, bgFile) {
   console.log(`🚪 Switching to room: ${roomName}`);
   
+  // Clear current messages
   elements.messages.innerHTML = '<div class="loading">Loading messages...</div>';
   
+  // Update user state
   currentUser.room = roomName;
   elements.roomNameDisplay.textContent = roomName;
   
+  // Update active room UI
   elements.chatrooms.forEach(room => {
     room.classList.remove('active');
     if (room.getAttribute('data-room') === roomName) {
@@ -572,40 +1133,281 @@ function switchRoom(roomName, bgFile) {
     }
   });
   
+  // Change background
   if (bgFile) {
     document.getElementById('animeBg').style.backgroundImage = `url('${bgFile}')`;
   }
   
+  // Load messages for new room
   loadMessages();
   
+  // Close sidebar
   elements.sidebar.classList.remove('show');
   
+  // Update online status with new room
+  if (currentUser.id) {
+    updateOnlineStatus();
+  }
+  
+  // Show welcome message
   setTimeout(() => {
     showSystemMessage(`Welcome to ${roomName}! Start chatting now.`);
   }, 500);
 }
 
-// ========== USER SYSTEM ==========
-function initializeUser() {
-  currentUser.id = 'user_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+// ========== MESSAGE SYSTEM ==========
+function initMessageSystem() {
+  // Send message
+  elements.sendButton.addEventListener('click', sendMessage);
+  elements.messageInput.addEventListener('keypress', (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      sendMessage();
+    }
+  });
   
-  console.log('✅ User registered:', currentUser.name, 'ID:', currentUser.id);
-  
-  updateOnlineStatus();
-  
-  loadMessages();
-  
-  setTimeout(() => {
-    elements.messageInput.focus();
-    showSystemMessage(`Welcome ${currentUser.name}! You joined ${currentUser.room}.`);
-  }, 500);
+  // Typing indicator
+  let typingTimeout;
+  elements.messageInput.addEventListener('input', () => {
+    if (!currentUser.id) return;
+    
+    // Update typing status
+    if (app.database) {
+      app.database.ref('typing/' + currentUser.id).set({
+        name: currentUser.name,
+        typing: true,
+        timestamp: Date.now(),
+        room: currentUser.room
+      });
+      
+      // Clear previous timeout
+      if (typingTimeout) clearTimeout(typingTimeout);
+      
+      // Set timeout to stop typing indicator
+      typingTimeout = setTimeout(() => {
+        app.database.ref('typing/' + currentUser.id).set({
+          name: currentUser.name,
+          typing: false,
+          timestamp: Date.now(),
+          room: currentUser.room
+        });
+      }, 2000);
+    }
+  });
 }
 
+function sendMessage() {
+  const text = elements.messageInput.value.trim();
+  if (!text) {
+    return;
+  }
+  
+  if (!currentUser.name || !currentUser.id) {
+    alert('Please enter your name first!');
+    return;
+  }
+  
+  if (!app.database) {
+    alert('Database not connected yet. Please wait...');
+    return;
+  }
+  
+  if (!currentUser.room) {
+    alert('Please select a room first!');
+    return;
+  }
+  
+  console.log(`💬 Sending message: ${text.substring(0, 20)}...`);
+  
+  const messagesRef = app.database.ref('rooms/' + currentUser.room + '/messages');
+  
+  messagesRef.push({
+    text: text,
+    senderId: currentUser.id,
+    senderName: currentUser.name,
+    timestamp: Date.now(),
+    type: 'text'
+  }).then(() => {
+    elements.messageInput.value = '';
+    elements.messageInput.focus();
+    
+    // Stop typing indicator
+    if (app.database) {
+      app.database.ref('typing/' + currentUser.id).set({
+        name: currentUser.name,
+        typing: false,
+        timestamp: Date.now(),
+        room: currentUser.room
+      });
+    }
+  }).catch(error => {
+    console.error('❌ Send error:', error);
+    alert('Failed to send message. Please try again.');
+  });
+}
+
+function loadMessages() {
+  console.log(`📨 Loading messages for room: ${currentUser.room}`);
+  elements.loading.style.display = 'block';
+  elements.messages.innerHTML = '';
+  
+  if (!app.database) {
+    showSystemMessage('Connecting to database...');
+    elements.loading.style.display = 'none';
+    return;
+  }
+  
+  const messagesRef = app.database.ref('rooms/' + currentUser.room + '/messages');
+  
+  messagesRef.orderByChild('timestamp').limitToLast(100).on('value', (snapshot) => {
+    elements.loading.style.display = 'none';
+    elements.messages.innerHTML = '';
+    
+    if (!snapshot.exists()) {
+      showSystemMessage(`Welcome to ${currentUser.room}! Be the first to send a message.`);
+      return;
+    }
+    
+    const messages = [];
+    snapshot.forEach(child => {
+      messages.push({
+        id: child.key,
+        ...child.val()
+      });
+    });
+    
+    // Sort by timestamp (oldest first)
+    messages.sort((a, b) => a.timestamp - b.timestamp);
+    
+    // Display messages
+    messages.forEach(msg => {
+      addMessageToUI(msg);
+    });
+    
+    // Scroll to bottom
+    setTimeout(() => {
+      elements.chatContainer.scrollTop = elements.chatContainer.scrollHeight;
+    }, 100);
+    
+  }, (error) => {
+    console.error('❌ Load messages error:', error);
+    elements.loading.style.display = 'none';
+    showSystemMessage('Error loading messages. Please refresh.');
+  });
+}
+
+function addMessageToUI(message) {
+  const isSentByMe = message.senderId === currentUser.id;
+  const messageDiv = document.createElement('div');
+  messageDiv.className = `message ${isSentByMe ? 'sent' : 'received'}`;
+  messageDiv.id = `msg-${message.id}`;
+  
+  const time = new Date(message.timestamp).toLocaleTimeString([], { 
+    hour: '2-digit', minute: '2-digit' 
+  });
+  
+  // Check if message is sticker
+  let content = '';
+  if (message.type === 'sticker') {
+    content = `
+      <div style="text-align:center;padding:5px;">
+        <img src="${message.stickerFile}" alt="${message.stickerName}" 
+             style="max-width:120px;max-height:120px;border-radius:10px;border:2px solid rgba(255,255,255,0.1);"
+             onerror="this.onerror=null; this.style.display='none'; this.parentElement.innerHTML='<div style=\'color:#ff2d2d;padding:10px;\'>🎌 ${message.stickerName}</div>';">
+        <div style="font-size:11px;opacity:0.7;margin-top:5px;background:rgba(255,255,255,0.05);padding:3px 8px;border-radius:10px;">${message.stickerName}</div>
+      </div>
+    `;
+  } else {
+    content = message.text || '';
+  }
+  
+  // Action buttons only for own messages
+  let actionButtons = '';
+  if (isSentByMe) {
+    actionButtons = `
+      <div class="message-actions">
+        <button class="message-action-btn" onclick="forwardMessage('${message.id}')" title="Forward">↪️</button>
+        <button class="message-action-btn" onclick="deleteMessage('${message.id}')" title="Delete">🗑️</button>
+      </div>
+    `;
+  }
+  
+  messageDiv.innerHTML = `
+    <div class="sender-name">
+      <span>${message.senderName || 'Unknown'} ${isSentByMe ? '(You)' : ''}</span>
+      <span class="message-time">${time}</span>
+    </div>
+    ${content}
+    ${actionButtons}
+  `;
+  
+  // Show actions on hover for own messages
+  if (isSentByMe && message.type !== 'sticker') {
+    const actionsDiv = messageDiv.querySelector('.message-actions');
+    if (actionsDiv) {
+      messageDiv.addEventListener('mouseenter', () => {
+        actionsDiv.style.display = 'flex';
+      });
+      messageDiv.addEventListener('mouseleave', () => {
+        actionsDiv.style.display = 'none';
+      });
+    }
+  }
+  
+  elements.messages.appendChild(messageDiv);
+}
+
+function showSystemMessage(text) {
+  const messageDiv = document.createElement('div');
+  messageDiv.className = 'message received';
+  messageDiv.style.background = 'rgba(255, 45, 45, 0.1)';
+  messageDiv.style.border = '1px dashed rgba(255, 45, 45, 0.3)';
+  messageDiv.innerHTML = `
+    <div class="sender-name">
+      <span style="color:#ff2d2d;">⚙️ System</span>
+      <span class="message-time">${new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+    </div>
+    ${text}
+  `;
+  elements.messages.appendChild(messageDiv);
+}
+
+// ========== FORWARD AND DELETE ==========
+function forwardMessage(messageId) {
+  if (!app.database) return;
+  
+  const messageRef = app.database.ref('rooms/' + currentUser.room + '/messages/' + messageId);
+  messageRef.once('value').then(snapshot => {
+    const message = snapshot.val();
+    if (message && message.text) {
+      elements.messageInput.value = `FWD: ${message.text}`;
+      elements.messageInput.focus();
+    }
+  });
+}
+
+function deleteMessage(messageId) {
+  if (!app.database) return;
+  
+  if (confirm('Are you sure you want to delete this message?')) {
+    app.database.ref('rooms/' + currentUser.room + '/messages/' + messageId).remove()
+      .then(() => {
+        console.log('✅ Message deleted');
+      })
+      .catch(error => {
+        console.error('❌ Delete error:', error);
+        alert('Failed to delete message');
+      });
+  }
+}
+
+// ========== ONLINE STATUS SYSTEM ==========
 function updateOnlineStatus() {
   if (!currentUser.id || !currentUser.name || !app.database) return;
   
   const userStatusRef = app.database.ref('status/' + currentUser.id);
   
+  // Set online status
   userStatusRef.set({
     name: currentUser.name,
     online: true,
@@ -614,11 +1416,13 @@ function updateOnlineStatus() {
     userId: currentUser.id
   });
   
+  // Set offline on disconnect
   userStatusRef.onDisconnect().update({
     online: false,
     lastSeen: Date.now()
   });
   
+  // Listen for other users
   app.database.ref('status').on('value', (snapshot) => {
     const users = [];
     let onlineCount = 0;
@@ -626,21 +1430,25 @@ function updateOnlineStatus() {
     if (snapshot.exists()) {
       snapshot.forEach(child => {
         const user = child.val();
-        if (user.online && user.userId !== currentUser.id) {
+        if (user.online) {
           users.push(user);
           onlineCount++;
         }
       });
     }
     
-    elements.onlineBadge.textContent = onlineCount;
-    elements.onlineCount.textContent = onlineCount + ' online';
+    // Update UI (remove current user from count)
+    const otherUsersCount = Math.max(0, onlineCount - 1);
+    elements.onlineBadge.textContent = otherUsersCount;
+    elements.onlineCount.textContent = otherUsersCount + ' online';
     
-    if (users.length === 0) {
+    // Update online users list (excluding current user)
+    const otherUsers = users.filter(user => user.userId !== currentUser.id);
+    if (otherUsers.length === 0) {
       elements.onlineUsersList.innerHTML = '<div class="loading">No other users online</div>';
     } else {
       let html = '';
-      users.forEach(user => {
+      otherUsers.forEach(user => {
         html += `
           <div class="online-user">
             <div class="user-avatar">${user.name.charAt(0).toUpperCase()}</div>
@@ -656,80 +1464,89 @@ function updateOnlineStatus() {
   });
 }
 
-// ========== UI SYSTEMS ==========
-function initSidebarSystem() {
-  let activeSidebar = null;
-  
-  function toggleSidebar(sidebar) {
-    if (activeSidebar === sidebar) {
-      sidebar.classList.remove('show');
-      activeSidebar = null;
+// ========== FIREBASE INITIALIZATION ==========
+function initializeFirebase() {
+  return new Promise((resolve, reject) => {
+    // Check if Firebase is already loaded
+    if (typeof firebase === 'undefined') {
+      console.log('🔥 Loading Firebase...');
+      // Load Firebase dynamically
+      const script = document.createElement('script');
+      script.src = 'https://www.gstatic.com/firebasejs/8.6.8/firebase-app.js';
+      script.onload = () => {
+        const authScript = document.createElement('script');
+        authScript.src = 'https://www.gstatic.com/firebasejs/8.6.8/firebase-auth.js';
+        authScript.onload = () => {
+          const dbScript = document.createElement('script');
+          dbScript.src = 'https://www.gstatic.com/firebasejs/8.6.8/firebase-database.js';
+          dbScript.onload = () => {
+            initFirebaseApp();
+            resolve();
+          };
+          document.head.appendChild(dbScript);
+        };
+        document.head.appendChild(authScript);
+      };
+      script.onerror = reject;
+      document.head.appendChild(script);
     } else {
-      if (activeSidebar) activeSidebar.classList.remove('show');
-      sidebar.classList.add('show');
-      activeSidebar = sidebar;
-    }
-    
-    elements.stickerMenu.style.display = 'none';
-  }
-  
-  elements.menuBtn.addEventListener('click', () => toggleSidebar(elements.sidebar));
-  elements.onlineBtn.addEventListener('click', () => toggleSidebar(elements.onlineSidebar));
-  
-  document.addEventListener('click', (e) => {
-    if (activeSidebar && 
-        !activeSidebar.contains(e.target) && 
-        e.target !== elements.menuBtn && 
-        e.target !== elements.onlineBtn) {
-      activeSidebar.classList.remove('show');
-      activeSidebar = null;
+      initFirebaseApp();
+      resolve();
     }
   });
+  
+  function initFirebaseApp() {
+    try {
+      app.firebase = firebase.initializeApp(CONFIG.FIREBASE_CONFIG);
+      app.database = firebase.database();
+      app.auth = firebase.auth();
+      console.log('✅ Firebase initialized successfully');
+    } catch (error) {
+      console.error('❌ Firebase initialization error:', error);
+    }
+  }
 }
 
-function initSecretPanel() {
-  elements.secretBtn.addEventListener('click', () => {
-    const isVisible = elements.secretContainer.style.display === 'block';
-    elements.secretContainer.style.display = isVisible ? 'none' : 'block';
-    
-    if (!isVisible) {
-      document.getElementById('secretPass1').textContent = CONFIG.SECRET_PASSWORDS.Chatroom1;
-      document.getElementById('secretPass2').textContent = CONFIG.SECRET_PASSWORDS.Chatroom2;
-      document.getElementById('secretPass3').textContent = CONFIG.SECRET_PASSWORDS.Chatroom3;
-      document.getElementById('secretPass4').textContent = CONFIG.SECRET_PASSWORDS.Chatroom4;
-      document.getElementById('secretPass5').textContent = CONFIG.SECRET_PASSWORDS.Chatroom5;
-    }
-  });
+// ========== USER INITIALIZATION ==========
+function initializeUser() {
+  if (!app.auth) {
+    console.error('❌ Firebase auth not available');
+    return;
+  }
   
-  document.addEventListener('click', (e) => {
-    if (!elements.secretContainer.contains(e.target) && e.target !== elements.secretBtn) {
-      elements.secretContainer.style.display = 'none';
-    }
-  });
+  console.log('👤 Signing in user...');
+  
+  app.auth.signInAnonymously()
+    .then((userCredential) => {
+      currentUser.id = userCredential.user.uid;
+      console.log('✅ User signed in:', currentUser.name, currentUser.id);
+      
+      // Start app features
+      updateOnlineStatus();
+      loadMessages();
+      
+      // Focus input
+      setTimeout(() => {
+        elements.messageInput.focus();
+        showSystemMessage(`Welcome ${currentUser.name}! You joined ${currentUser.room}. Send messages or stickers!`);
+      }, 1000);
+      
+    }).catch(error => {
+      console.error('❌ Sign in error:', error);
+      showSystemMessage('Connection error. Please refresh.');
+    });
 }
 
 // ========== EVENT LISTENERS ==========
 function initEventListeners() {
+  // Name submission
   document.getElementById('submitName').addEventListener('click', () => {
-    currentUser.name = elements.nameInput.value.trim();
-    if (!currentUser.name) {
-      currentUser.name = 'AnimeFan' + Math.floor(Math.random() * 1000);
-    }
-    
+    currentUser.name = elements.nameInput.value.trim() || 'AnimeFan' + Math.floor(Math.random() * 1000);
     if (currentUser.name) {
       localStorage.setItem('animechat_username', currentUser.name);
       elements.nameModal.style.display = 'none';
       document.title = currentUser.name + ' - AnimeChat Pro';
-      
-      initializeFirebase().then(firebaseLoaded => {
-        if (firebaseLoaded) {
-          initializeUser();
-        } else {
-          currentUser.id = 'offline_' + Date.now();
-          showSystemMessage(`Welcome ${currentUser.name}! (Offline Mode)`);
-          loadMessages();
-        }
-      });
+      initializeUser();
     }
   });
   
@@ -739,6 +1556,7 @@ function initEventListeners() {
     }
   });
   
+  // Password submission
   document.getElementById('submitPassword').addEventListener('click', () => {
     const roomName = elements.passwordModal.dataset.room;
     const requiredPassword = elements.passwordModal.dataset.password;
@@ -752,6 +1570,7 @@ function initEventListeners() {
     } else {
       alert('❌ Wrong password! Try again.');
       elements.passwordInput.focus();
+      elements.passwordInput.select();
     }
   });
   
@@ -766,35 +1585,43 @@ function initEventListeners() {
     }
   });
   
+  // Navigation
   elements.navItems.forEach(item => {
     item.addEventListener('click', () => {
+      const tab = item.getAttribute('data-tab');
+      
       elements.navItems.forEach(nav => nav.classList.remove('active'));
       item.classList.add('active');
       
-      const tab = item.getAttribute('data-tab');
-      if (tab === 'rooms') {
-        elements.sidebar.classList.add('show');
-      } else if (tab === 'online') {
-        elements.onlineSidebar.classList.add('show');
-      } else if (tab === 'theme') {
-        const bgFiles = ['background.png', 'bg1.png', 'bg2.png', 'bg3.png', 'bg4.png', 'bg5.png'];
-        const currentBg = document.getElementById('animeBg').style.backgroundImage;
-        let currentIndex = 0;
-        
-        for (let i = 0; i < bgFiles.length; i++) {
-          if (currentBg.includes(bgFiles[i])) {
-            currentIndex = i;
-            break;
+      switch(tab) {
+        case 'rooms':
+          elements.sidebar.classList.add('show');
+          break;
+        case 'online':
+          elements.onlineSidebar.classList.add('show');
+          break;
+        case 'theme':
+          // Cycle through backgrounds
+          const bgFiles = ['background.png', 'bg1.png', 'bg2.png', 'bg3.png', 'bg4.png', 'bg5.png'];
+          const currentBg = document.getElementById('animeBg').style.backgroundImage;
+          let currentIndex = 0;
+          
+          for (let i = 0; i < bgFiles.length; i++) {
+            if (currentBg.includes(bgFiles[i])) {
+              currentIndex = i;
+              break;
+            }
           }
-        }
-        
-        const nextIndex = (currentIndex + 1) % bgFiles.length;
-        document.getElementById('animeBg').style.backgroundImage = `url('${bgFiles[nextIndex]}')`;
-        showSystemMessage(`Theme changed to Background ${nextIndex + 1}`);
+          
+          const nextIndex = (currentIndex + 1) % bgFiles.length;
+          document.getElementById('animeBg').style.backgroundImage = `url('${bgFiles[nextIndex]}')`;
+          showSystemMessage(`Theme changed to Background ${nextIndex + 1}`);
+          break;
       }
     });
   });
   
+  // Auto-adjust chat container height
   function adjustChatHeight() {
     const headerHeight = document.querySelector('.chat-header').offsetHeight;
     const inputHeight = document.querySelector('.input-area').offsetHeight;
@@ -809,48 +1636,44 @@ function initEventListeners() {
 
 // ========== APP INITIALIZATION ==========
 async function initializeApp() {
-  console.log('🚀 AnimeChat Pro LOADED');
+  console.log('🚀 AnimeChat Pro - ZAFAR Rooms LOADED');
+  console.log('🎌 Sticker Pack: 10 FREE Anime Stickers');
   
-  // CHECK IF USER ALREADY HAS A NAME SAVED
-  const savedName = localStorage.getItem('animechat_username');
-  if (savedName) {
-    currentUser.name = savedName;
-    currentUser.id = 'user_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
-    document.title = currentUser.name + ' - AnimeChat Pro';
-    
-    initializeFirebase().then(firebaseLoaded => {
-      if (firebaseLoaded) {
-        initializeUser();
-      } else {
-        currentUser.id = 'offline_' + Date.now();
-        showSystemMessage(`Welcome back ${currentUser.name}! (Offline Mode)`);
-        loadMessages();
-      }
-    });
-    
-    elements.nameModal.style.display = 'none';
-  } else {
-    elements.nameModal.style.display = 'flex';
-    elements.nameInput.focus();
-    elements.nameInput.value = 'AnimeFan' + Math.floor(Math.random() * 1000);
-  }
-  
+  // Initialize UI systems
   initStickerSystem();
+  initEmojiSystem();
   initSidebarSystem();
   initSecretPanel();
   initRoomSystem();
   initMessageSystem();
   initEventListeners();
   
-  console.log('✅ App initialized successfully');
+  // Check for saved user
+  if (currentUser.name) {
+    console.log('✅ Found saved user:', currentUser.name);
+    document.title = currentUser.name + ' - AnimeChat Pro';
+    
+    // Initialize Firebase and then user
+    try {
+      await initializeFirebase();
+      initializeUser();
+    } catch (error) {
+      console.error('❌ App initialization failed:', error);
+      showSystemMessage('Failed to connect. Please refresh the page.');
+    }
+  } else {
+    console.log('🆕 No saved user - showing modal');
+    elements.nameModal.style.display = 'flex';
+    elements.nameInput.focus();
+    elements.nameInput.value = 'AnimeFan' + Math.floor(Math.random() * 1000);
+  }
 }
 
 // ========== START APP ==========
 document.addEventListener('DOMContentLoaded', initializeApp);
 
-window.hideSecretPanel = () => {
-  elements.secretContainer.style.display = 'none';
-};
+// Export functions for global access
+window.forwardMessage = forwardMessage;
+window.deleteMessage = deleteMessage;
+window.hideSecretPanel = hideSecretPanel;
 </script>
-</body>
-</html>
