@@ -54,7 +54,7 @@
       width: 0%;
       background: rgba(0, 0, 0, 0.9);
       backdrop-filter: blur(15px);
-      padding: 12px 15px;
+      padding: 12px px;
       display: flex;
       align-items: center;
       justify-content: space-between;
@@ -71,8 +71,8 @@
     }
     
     .logo {
-      width: 40px;
-      height: 40px;
+      width: 120px;
+      height: 50px;
       border-radius: 10px;
       overflow: hidden;
       border: 2px solid #ff2d2d;
@@ -205,14 +205,14 @@
     
     #messageInput {
       flex: 1;
-      padding: 12px 18px;
-      border-radius: 24px;
+      padding: 10px 20px;
+      border-radius: 25px;
       border: none;
       background: rgba(255, 255, 255, 0.1);
       color: white;
       font-size: 14px;
       outline: none;
-      border: 1px solid rgba(255, 45, 45, 0.3);
+      border: 2px solid rgba(255, 45, 45, 0.3);
     }
     
     #messageInput::placeholder {
@@ -342,7 +342,7 @@
       gap: 12px;
       padding: 12px;
       margin-bottom: 10px;
-      background: rgba(255, 255, 255, 0.05);
+      background: rgba(255, 255, 255, 0.09);
       border-radius: 12px;
       cursor: pointer;
       transition: 0.3s;
@@ -397,11 +397,11 @@
     /* STICKER MENU (NEW) */
     .sticker-menu {
       position: fixed;
-      bottom: 110px;
-      left: 10px;
-      right: 10px;
-      background: rgba(0, 0, 0, 0.98);
-      border: 2px solid rgba(255, 45, 45, 0.5);
+      bottom: 100px;
+      left: 0px;
+      right: 0px;
+      background: rgba(0, 0, 0, 0.99);
+      border: 3px solid rgba(255, 45, 45, 0.5);
       border-radius: 15px;
       z-index: 1000;
       display: none;
@@ -641,7 +641,7 @@
   <div class="chat-header">
     <div class="header-left">
       <button id="menuBtn" style="background:none;border:none;color:#ff2d2d;font-size:22px;cursor:pointer;">☰</button>
-      <div class="logo">🧸</div>
+      <div class="logo">ZAFI🧸</div>
       <div class="header-text">
         <h2></h2>
         <small id="onlineCount">0 online</small>
@@ -663,7 +663,7 @@
   
   <!-- Input Area -->
   <div class="input-area">
-    <button class="sticker-btn" id="stickerBtn">🇵🇰</button>
+    <button class="sticker-btn" id="stickerBtn">㋡</button>
     <button id="emojiBtn" style="background:none;border:none;color:#ff2d2d;font-size:20px;cursor:pointer;"></button>
     <input type="text" id="messageInput" placeholder="Type a message..." autocomplete="off">
     <button id="sendButton">➤</button>
@@ -704,10 +704,9 @@
       <div><span id="onlineBadge">0</span> Online</div>
     </div>
   </div>
-  
-  <!-- Sidebars -->
+     <!-- Sidebars -->
   <div class="sidebar" id="sidebar">
-    <h3 style="margin-top:0;color:#ff2d2d;text-align:center;">🔒 Secret Rooms</h3>
+    <h3 style="margin-top:0;color:#ff2d2d;text-align:center;">MADE IN PIKISTAN®2025</h3>
     
     <div class="chatroom active" data-room="general" data-bg="background.png">
       <div class="room-avatar">🌍</div>
@@ -808,14 +807,19 @@ const CONFIG = {
     { id: 1, name: "Gold Ring", file: "1.gif" },
     { id: 2, name: "Gold Star", file: "2.gif" },
     { id: 3, name: "Diamond Hand", file: "3.gif" },
-    { id: 4, name: "Gold Watch", file: "4.gif" },
+    { id: 4, name: "Gold Girl Watch", file: "4.gif" },
     { id: 5, name: "Diamond", file: "5.gif" },
     { id: 6, name: "Cute Bear", file: "6.gif" },
-    { id: 7, name: "Gift Box", file: "7.gif" },
-    { id: 8, name: "Gold Watch", file: "8.gif" },
+    { id: 7, name: "Gift Nicklaus", file: "7.gif" },
+    { id: 8, name: "Gold Boy Watch", file: "8.gif" },
     { id: 9, name: "Gold", file: "9.gif" },
-    { id: 10, name: "Gold Crown", file: "10.gif" }
-  ],
+    { id: 10, name: "Gold", file: "10.gif" },
+    { id: 11, name: "Gold", file: "11.gif" },
+    { id: 12, name: "Gold", file: "12.gif" },
+    { id: 13, name: "Gold", file: "13.gif" },
+    { id: 14, name: "Gold", file: "14.gif" },
+    { id: 15, name: "Gold", file: "15.gif" },
+      ],
   
   FIREBASE_CONFIG: {
     apiKey: "AIzaSyB8zMhCjGxmHBpruABYA4pBj3jU0uMHCs0",
